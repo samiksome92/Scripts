@@ -7,6 +7,7 @@ This is simply a collection of scripts to make my life easier.
 
 ## JavaScript Scripts
 - [`desktopWikipedia.js`](#desktopWikipediajs)
+- [`nyaaMagnet.js`](#nyaaMagnetjs)
 - [`oldReddit.js`](#oldRedditjs)
 - [`twitterImage.js`](#twitterImagejs)
 
@@ -134,6 +135,13 @@ If `--jpeg` is speicified all images are converted to JPEG. Similarly if `--png`
 If `--merge_dirs` is specified images in sub-directories are moved to the parent directory while appending the sub-directory's name before it. Useful if the comic contains logical parts which should have a common prefix (Should generally be used along with `--no-rename` to keep said prefixes).
 
 `--no-rename` if specified keeps the original file names of the images, otherwise they are renamed as `01.jpg`, `02.jpg`, `03.jpg`, ... (the numbers are padded with as many zeros as required). `--delete` if specified deletes the original image files as well as the directory.
+
+---
+
+## `nyaaMagnet.js`
+This script adds an extra button beside the search button in [nyaa.si](https://nyaa.si), which collects the magnet links for all of the torrents listed in the current page/screen and copies them to the clipboard.
+
+Primary use is searching for torrents of a series and grabbing all magnet links (say for all episodes) in one go.
 
 ---
 
