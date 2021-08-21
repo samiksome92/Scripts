@@ -13,6 +13,7 @@ This is simply a collection of scripts to make my life easier.
 
 ## Python Scripts
 - [`crop.py`](#croppy)
+- [`gallery.py`](#gallerypy)
 - [`gif2mkv.py`](#gif2mkvpy)
 - [`imcompare.py`](#imcomparepy)
 - [`makecbz.py`](#makecbzpy)
@@ -64,6 +65,47 @@ It works well if the actual region of interest has the most edges, otherwise it 
 
 ## `desktopWikipedia.js`
 A simple user script to redirect mobile english wikipedia links to their desktop versions. The script replaces `*.m.wikipedia.org` with `*.wikipedia.org` in url to achieve this.
+
+---
+
+## `gallery.py`
+This script takes a directory as input and shows all images inside it as a gallery.
+
+The script scans a given directory for supported image files. It then generates HTML pages for a gallery populated with found images. Once the HTML files have been created, the gallery is shown using the default web browser. Supports keyboard and mouse navigation.
+
+### Requirements
+- `pillow`
+- `tqdm`
+
+### Usage
+    gallery.py [-h] [-r] [-t HEIGHT] [-p PADDING] [-b ...] dir_path
+
+positional arguments
+
+    dir_path              Directory containing the images
+
+optional arguments:
+
+    -h, --help            show this help message and exit
+    -r, --randomize       Randomize the order of the images
+    -t HEIGHT, --height HEIGHT
+                          Height of each row in pixels
+    -p PADDING, --padding PADDING
+                          Padding between images
+    -b ..., --browser ...
+                          Custom browser command (arguments supported)
+
+The gallery is laid out as shown in this example.
+![](examples/gallery.png)
+The images can be clicked to go into single view mode, where only that image is shown. Standard `left`/`right` keyboard navigation is supported, as is `+`, `-`, `0` for zooming.
+
+By default padding of 5px is used but can be overridden using `--padding` parameter. Similarly the default height of each row is 300px and can be overridden by specifying `--height`.
+
+If `--randomize` is specified, the order of the images will be randomized (it will still try to keep multipart images, such as `img1`, `img2`, etc., together). Without `--randomize` the images are laid out in alphabetical order.
+
+Finally, a custom browser can be used via the parameter `--browser`. Arguments to said browser command can also be provided.
+
+<b>NOTE</b>: `--browser` should be specified at the very end since any argument following it is considered part of the browser command.
 
 ---
 
