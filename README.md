@@ -97,6 +97,8 @@ optional arguments:
 
 The gallery is laid out as shown in this example.
 ![](examples/gallery.png)
+(Images courtesy of [Unsplash](https://unsplash.com/))
+
 The images can be clicked to go into single view mode, where only that image is shown. Standard `left`/`right` keyboard navigation is supported, as is `+`, `-`, `0` for zooming.
 
 By default padding of 5px is used but can be overridden using `--padding` parameter. Similarly the default height of each row is 300px and can be overridden by specifying `--height`.
