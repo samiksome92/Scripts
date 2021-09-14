@@ -13,6 +13,7 @@ import os
 import sys
 
 import cv2
+import numpy as np
 from PIL import Image
 from PySide6.QtCore import Slot, QObject, QUrl
 from PySide6.QtGui import QGuiApplication
@@ -153,9 +154,11 @@ def similarity(img_1, img_2, resolution=100):
         width = int(resolution)
         height = int(resolution / avg_aspect)
 
-    # Read images, convert to grayscale and resize.
-    im_1 = cv2.imread(img_1['path'])
-    im_2 = cv2.imread(img_2['path'])
+    # Read images (via numpy to support unicode paths), convert to grayscale and resize.
+    im_1 = np.fromfile(img_1['path'], dtype='uint8')
+    im_2 = np.fromfile(img_2['path'], dtype='uint8')
+    im_1 = cv2.imdecode(im_1, cv2.IMREAD_UNCHANGED)
+    im_2 = cv2.imdecode(im_2, cv2.IMREAD_UNCHANGED)
     im_1 = cv2.cvtColor(im_1, cv2.COLOR_BGR2GRAY)
     im_2 = cv2.cvtColor(im_2, cv2.COLOR_BGR2GRAY)
     im_1 = cv2.resize(im_1, (width, height))
