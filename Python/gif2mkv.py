@@ -201,7 +201,6 @@ def main():
     # Extract frames and get durations.
     extract_frames(args.gif_file, tmp_dir, args.bg_color)
     durations = get_durations(args.gif_file)
-    print(durations)
 
     # If output file is not explicitly specified use best guess.
     if args.out_file is None:
