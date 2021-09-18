@@ -13,6 +13,7 @@ import platform
 import random
 import re
 import subprocess
+from typing import List, Union
 
 from PIL import Image
 from tqdm import tqdm
@@ -28,7 +29,7 @@ elif system == 'Linux':
     BROWSER = ['xdg-open']
 
 
-def is_supported_img(file_path):
+def is_supported_img(file_path: str) -> bool:
     """Checks if a file is a supported image or not.
 
     Parameters
@@ -50,7 +51,7 @@ def is_supported_img(file_path):
         return False
 
 
-def get_img_files(dir_path):
+def get_img_files(dir_path: str) -> List[str]:
     """Returns a list of images under the given directory.
 
     Parameters
@@ -60,7 +61,7 @@ def get_img_files(dir_path):
 
     Returns
     -------
-    img_files : list[str]
+    img_files : List[str]
         List of images.
     """
     # Get list of all files in directory.
@@ -75,17 +76,17 @@ def get_img_files(dir_path):
     return img_files
 
 
-def randomize_imgs(img_files):
+def randomize_imgs(img_files: List[str]) -> List[str]:
     """Randomize the order of images while keeping multi-part images together.
 
     Parameters
     ----------
-    img_files : list[str]
+    img_files : List[str]
         List of images.
 
     Returns
     -------
-    img_files : list[str]
+    img_files : List[str]
         Randomized list of images.
     """
     # Group image sequences.
@@ -107,7 +108,7 @@ def randomize_imgs(img_files):
     return img_files
 
 
-def write_img_html(out_file, img_file, prev, next):
+def write_img_html(out_file: str, img_file: str, prev: str, next: str) -> None:
     """Writes out the html for a single image file.
 
     Parameters
@@ -219,16 +220,16 @@ def write_img_html(out_file, img_file, prev, next):
         file_obj.write(html)
 
 
-def write_html(out_file, img_files, img_ids, height=300, padding=5):
+def write_html(out_file: str, img_files: List[str], img_ids: List[str], height: int = 300, padding: int = 5) -> None:
     """Writes out the html for the gallery itself.
 
     Parameters
     ----------
     out_file : str
         Output HTML file.
-    img_files : list[str]
+    img_files : List[str]
         List of images.
-    img_ids : list[str]
+    img_ids : List[str]
         IDs of images.
     height : int, optional
         Height of each row. (default=300)
@@ -365,7 +366,7 @@ def write_html(out_file, img_files, img_ids, height=300, padding=5):
         file_obj.write(html)
 
 
-def create_gallery(dir_path, randomize=False, height=300, padding=5):
+def create_gallery(dir_path: str, randomize: bool = False, height: int = 300, padding: int = 5) -> Union[str, None]:
     """Given a directory scan it for images and create a gallery for the same.
 
     Parameters
@@ -434,20 +435,20 @@ def create_gallery(dir_path, randomize=False, height=300, padding=5):
     return os.path.join(out_dir, 'index.html')
 
 
-def open_gallery(html_path, browser=BROWSER):
+def open_gallery(html_path: str, browser: List[str] = BROWSER) -> None:
     """Given a path open it in the browser.
 
     Parameters
     ----------
     html_path : str
         Path to HTML file.
-    browser : list[str]
+    browser : List[str]
         Command line for browser.
     """
     subprocess.run(browser + [html_path])
 
 
-def main():
+def main() -> None:
     """Main function for the script"""
     # Parse arguments.
     parser = argparse.ArgumentParser()

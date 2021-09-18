@@ -11,11 +11,12 @@ import math
 import os
 from shutil import rmtree
 import subprocess
+from typing import List
 
 from PIL import Image
 
 
-def extract_frames(gif_file, out_dir, bg_color):
+def extract_frames(gif_file: str, out_dir: str, bg_color: str) -> None:
     """Extract frames from gif using imagemagick.
 
     Parameters
@@ -51,7 +52,7 @@ def extract_frames(gif_file, out_dir, bg_color):
         subprocess.run(command, check=True)
 
 
-def get_durations(gif_file):
+def get_durations(gif_file: str) -> List[int]:
     """Returns the duration of each frame in the gif.
 
     Parameters
@@ -61,7 +62,7 @@ def get_durations(gif_file):
 
     Returns
     -------
-    durations : list[int]
+    durations : List[int]
         Duration of each frame in milliseconds.
     """
     with Image.open(gif_file, 'r') as img:
@@ -73,12 +74,12 @@ def get_durations(gif_file):
     return durations
 
 
-def is_constant_fps(durations):
+def is_constant_fps(durations: List[int]) -> bool:
     """Checks whether the gif has a constant fps or not.
 
     Parameters
     ----------
-    durations : list[int]
+    durations : List[int]
         Duration of each frame in milliseconds.
 
     Returns
@@ -92,14 +93,14 @@ def is_constant_fps(durations):
     return len(durations) == 1
 
 
-def constant_fps_encode(frames_dir, durations, out_file):
+def constant_fps_encode(frames_dir: str, durations: List[int], out_file: str) -> None:
     """Encoding function for constant fps gif.
 
     Parameters
     ----------
     frames_dir : str
         Path for extracted frames.
-    durations : list[int]
+    durations : List[int]
         Duration of each frame in milliseconds.
     out_file : str
         Output file path.
@@ -127,7 +128,7 @@ def constant_fps_encode(frames_dir, durations, out_file):
     subprocess.run(command, check=True)
 
 
-def variable_fps_encode(frames_dir, durations, out_file):
+def variable_fps_encode(frames_dir: str, durations: List[int], out_file: str) -> None:
     """Encoding function for variable fps gif.
 
     Uses ffmpeg constant fps encode + mkvmerge to set timecodes since ffmpeg variable doesn't seem to work properly in
@@ -137,7 +138,7 @@ def variable_fps_encode(frames_dir, durations, out_file):
     ----------
     frames_dir : str
         Path for extracted frames.
-    durations : list[int]
+    durations : List[int]
         Duration of each frame in milliseconds.
     out_file : str
         Output file path.
@@ -185,7 +186,7 @@ def variable_fps_encode(frames_dir, durations, out_file):
     subprocess.run(command, check=True)
 
 
-def main():
+def main() -> None:
     """Main function for the script which takes gif as input and converts it to mkv."""
     # Parse arguments.
     parser = argparse.ArgumentParser()

@@ -9,20 +9,21 @@ resized to fit one crop dimension.
 import argparse
 import os
 from shutil import copy
+from typing import Tuple
 
 import cv2 as cv
 import numpy as np
 from PIL import Image
 
 
-def gradient_crop(img, crop_size):
+def gradient_crop(img: np.ndarray, crop_size: Tuple[int, int]) -> np.ndarray:
     """Crop an image using gradients as importance features.
 
     Paramters
     ---------
     img : numpy.ndarray
         Numpy array of the image with shape (h, w, c), dtype uint8 and values between 0-255.
-    crop_size : tuple(int, int)
+    crop_size : Tuple[int, int]
         Tuple specifying the crop size as (w, h).
 
     Returns
@@ -53,7 +54,7 @@ def gradient_crop(img, crop_size):
     return img[max_i:max_i+crop_height, max_j:max_j+crop_width]
 
 
-def crop(img_path, crop_size, fit=False, out_file=None):
+def crop(img_path: str, crop_size: Tuple[int, int], fit: bool = False, out_file: str = None) -> None:
     """Crops an image intelligently by looking at image gradients and keeping the crop window with the largest sum of
     such gradients.
 
@@ -61,7 +62,7 @@ def crop(img_path, crop_size, fit=False, out_file=None):
     ----------
     img_path : str
         Image to crop.
-    crop_size : tuple(int, int)
+    crop_size : Tuple[int, int]
         Tuple specifying the crop size as (w, h).
     fit : bool, optional
         Resize the image to fit one crop dimension if True. (default=False)
@@ -111,7 +112,7 @@ def crop(img_path, crop_size, fit=False, out_file=None):
     os.remove(os.path.join(os.path.dirname(img_path), os.path.basename(img_path)+'.tmp'))
 
 
-def main():
+def main() -> None:
     """Main function for the script."""
     parser = argparse.ArgumentParser()
     parser.add_argument('img_path', help='Image to crop')

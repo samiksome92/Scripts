@@ -11,6 +11,7 @@ import argparse
 import itertools
 import os
 import sys
+from typing import List
 
 import cv2
 import numpy as np
@@ -27,7 +28,7 @@ COLOR_WORSE = '#c62828'
 COLOR_DIFF = '#f9a825'
 
 
-def filesize(size):
+def filesize(size: int) -> str:
     """Given file size in bytes returns human readable string.
 
     Parameters
@@ -54,12 +55,12 @@ def filesize(size):
     return f'{size:.2f} {units[unit_idx]}'
 
 
-def getpairs(dir_paths, cross=False, max_aspect=0.1):
+def getpairs(dir_paths: List[str], cross: bool = False, max_aspect: float = 0.1) -> List[tuple]:
     """Given a set of directories gathers image pairs for comparison.
 
     Parameters
     ----------
-    dir_paths : list[str]
+    dir_paths : List[str]
         Image directories.
     cross : bool, optional
         If True compares across directories. (default=False)
@@ -68,7 +69,7 @@ def getpairs(dir_paths, cross=False, max_aspect=0.1):
 
     Returns
     -------
-    img_pairs : list[tuple]
+    img_pairs : List[tuple]
         Pairs of images for comparison.
     """
     # Gather all valid images.
@@ -124,7 +125,7 @@ def getpairs(dir_paths, cross=False, max_aspect=0.1):
     return img_pairs
 
 
-def similarity(img_1, img_2, resolution=100):
+def similarity(img_1: dict, img_2: dict, resolution: int = 100) -> float:
     """Given two images measures their similarity using ssim.
 
     Parameters
@@ -170,17 +171,17 @@ def similarity(img_1, img_2, resolution=100):
     return score
 
 
-def start(img_pairs):
+def start(img_pairs: List[tuple]) -> List[str]:
     """Starts the Qt GUI application for user to select images.
 
     Parameters
     ----------
-    img_pairs : list[tuple]
+    img_pairs : List[tuple]
         Image pairs for comparison.
 
     Returns
     -------
-    discarded : list[str]
+    discarded : List[str]
         List of discarded images. Only the paths are returned.
     """
     # Set up Qt app.
@@ -308,7 +309,7 @@ def start(img_pairs):
     return discarded
 
 
-def main():
+def main() -> None:
     """Main method for the script."""
     parser = argparse.ArgumentParser()
     parser.add_argument('dirs', help='Image directories', nargs='+')

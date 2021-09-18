@@ -10,6 +10,7 @@ resolution they are scaled down as well. The images are optionally renamed and p
 import argparse
 import os
 from shutil import copy, move
+from typing import List, Tuple, Union
 from zipfile import ZipFile
 
 from PIL import Image
@@ -18,7 +19,7 @@ from tqdm import tqdm
 SUPPORTED_FORMATS = ['JPEG', 'PNG', 'GIF', 'WEBP']
 
 
-def is_animated(img):
+def is_animated(img: Image) -> bool:
     """Checks whether an image is animated or not.
 
     Parameters
@@ -38,14 +39,14 @@ def is_animated(img):
         return False
 
 
-def resize(img, size):
+def resize(img: Image, size: Tuple[int, int]) -> Image:
     """Resize an image.
 
     Parameters
     ----------
     img : PIL.Image
         Image to resize.
-    size : tuple(int, int)
+    size : Tuple[int, int]
         Size to resize to as (w, h) tuple.
 
     Returns
@@ -59,14 +60,14 @@ def resize(img, size):
     return img
 
 
-def resize_alpha(img, size):
+def resize_alpha(img: Image, size: Tuple[int, int]) -> Image:
     """Resize an image with alpha channel.
 
     Parameters
     ----------
     img : PIL.Image
         Image to resize.
-    size : tuple(int, int)
+    size : Tuple[int, int]
         Size to resize to as (w, h) tuple.
 
     Returns
@@ -80,7 +81,7 @@ def resize_alpha(img, size):
     return img
 
 
-def composite(img):
+def composite(img: Image) -> Image:
     """Alpha composite a RGBA image over a black background.
 
     Parameters
@@ -101,7 +102,7 @@ def composite(img):
     return img
 
 
-def get_scale(inv_aspect):
+def get_scale(inv_aspect: float) -> float:
     """Return the image scale based on aspect ratio as a float.
 
     Parameters
@@ -122,7 +123,15 @@ def get_scale(inv_aspect):
     return int(inv_aspect)+1.0
 
 
-def process_image(img_file, out_file, jpeg=False, png=False, quality=None, scale_down=False, new_size=None):
+def process_image(
+    img_file: dict,
+    out_file: str,
+    jpeg: bool = False,
+    png: bool = False,
+    quality: int = 0,
+    scale_down: bool = False,
+    new_size: Tuple[int, int] = (0, 0)
+):
     """Process a image.
 
     Parameters
@@ -136,11 +145,11 @@ def process_image(img_file, out_file, jpeg=False, png=False, quality=None, scale
     png : bool, optional
         Convert images to PNG if True. (default=False)
     quality : int, optional
-        JPEG quality or PNG compression. (default=None)
+        JPEG quality or PNG compression. (default=0)
     scale_down : bool, optional
         Whether to scale image or not. (default=False)
-    new_size : tuple(int, int), optional
-        New size if scaling is needed. (default=None)
+    new_size : Tuple[int, int], optional
+        New size if scaling is needed. (default=(0, 0))
     """
     # Copy file without any changes for valid cases.
     if img_file['format'] == 'JPEG' and not png and not scale_down:
@@ -187,7 +196,7 @@ def process_image(img_file, out_file, jpeg=False, png=False, quality=None, scale
         return
 
 
-def merge_subdirs(dir_path):
+def merge_subdirs(dir_path: str) -> bool:
     """Merge images in sub-directories after verifying them.
 
     Parameters
@@ -242,19 +251,19 @@ def merge_subdirs(dir_path):
     return True
 
 
-def check_files(file_list):
+def check_files(file_list: List[str]) -> Tuple[dict, List[Tuple[str, str]]]:
     """Check all files and return supported image files and non-supported files.
 
     Parameters
     ----------
-    file_list : list[str]
+    file_list : List[str]
         List of files.
 
     Returns
     -------
     img_files : dict
         Dictionary of all supported image files.
-    bad_files : list[tuple(str, str)]
+    bad_files : List[Tuple[str, str]]
         List of bad files and reasons why they are bad.
     """
     img_files = []
@@ -277,17 +286,17 @@ def check_files(file_list):
     return img_files, bad_files
 
 
-def find_duplicates(file_list):
+def find_duplicates(file_list: List[str]) -> List[List[str]]:
     """Checks if any files share the same basename (not case sensitive).
 
     Parameters
     ----------
-    files : list[str]
+    files : List[str]
         List of files.
 
     Returns
     -------
-    dup_file_list : list[list[str]]
+    dup_file_list : List[List[str]]
         List of lists of duplicate files.
     """
     # Normalize all path names and add them to a dictionary.
@@ -308,27 +317,27 @@ def find_duplicates(file_list):
 
 
 def make_cbz(
-    dir_path,
-    h_res=None,
-    jpeg=False,
-    png=False,
-    quality=None,
-    merge_dirs=False,
-    no_rename=False,
-    delete=False
+    dir_path: str,
+    h_res: Union[int, None] = None,
+    jpeg: bool = False,
+    png: bool = False,
+    quality: int = 0,
+    merge_dirs: bool = False,
+    no_rename: bool = False,
+    delete: bool = False
 ):
     """Make a cbz from a directory.
 
     dir_path : str
         Path to directory.
-    h_res : int, optional
+    h_res : int | None, optional
         Maximum horizontal resolution. If None no resizing is done. (default=None)
     jpeg : bool, optional
         Convert images to JPEG if True. (default=False)
     png : bool, optional
         Convert images to PNG if True. (default=False)
     quality : int, optional
-        JPEG quality or PNG compression. (default=None)
+        JPEG quality or PNG compression. (default=0)
     merge_dirs : bool, optional
         Merge images in subdirectories if True. (default=False)
     no_rename : bool, optional
@@ -441,7 +450,7 @@ def make_cbz(
     print('Done.')
 
 
-def main():
+def main() -> None:
     """Main function for the script which takes directories as input and converts them to CBZs."""
     # Parse arguments.
     parser = argparse.ArgumentParser()
