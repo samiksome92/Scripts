@@ -14,6 +14,7 @@ import random
 import re
 import subprocess
 from typing import List, Union
+import urllib.parse
 
 from PIL import Image
 from tqdm import tqdm
@@ -172,15 +173,18 @@ def write_img_html(out_file: str, img_file: str, prev: str, next: str) -> None:
     )
 
     # HTML body.
+    img_url = urllib.parse.quote(img_file.replace('\\', '/')).replace('%3A', ':')
     html += (
         '</head>'
         '<body id="body">'
-        f'<img src="file://{img_file}" id="image">'
+        f'<img src="file://{img_url}" id="image">'
         '<div id="left"></div>'
         '<div id="right"></div>'
     )
 
     # JavaScript section.
+    prev_url = urllib.parse.quote(prev.replace('\\', '/')).replace('%3A', ':')
+    next_url = urllib.parse.quote(next.replace('\\', '/')).replace('%3A', ':')
     html += (
         '<script>'
         'const body = document.getElementById("body");'
@@ -215,9 +219,9 @@ def write_img_html(out_file: str, img_file: str, prev: str, next: str) -> None:
         '       imageCss.setProperty("object-fit", "scale-down");'
         '   }'
         '   else if (event.key === "ArrowLeft" && img.offsetWidth <= body.offsetWidth && img.offsetHeight <= body.offsetHeight)'
-        f'      window.location.replace("{prev}");'
+        f'      window.location.replace("{prev_url}");'
         '   else if (event.key === "ArrowRight" && img.offsetWidth <= body.offsetWidth && img.offsetHeight <= body.offsetHeight)'
-        f'      window.location.replace("{next}");'
+        f'      window.location.replace("{next_url}");'
         '   else if (event.key === "Backspace" || event.key === "Escape")'
         '       history.back();'
         '   else if (event.key === "q")'
@@ -225,11 +229,11 @@ def write_img_html(out_file: str, img_file: str, prev: str, next: str) -> None:
         '}, false);'
         'let left = document.getElementById("left");'
         'left.addEventListener("click", (event) => {'
-        f'   window.location.replace("{prev}");'
+        f'   window.location.replace("{prev_url}");'
         '}, false);'
         'let right = document.getElementById("right");'
         'right.addEventListener("click", (event) => {'
-        f'   window.location.replace("{next}");'
+        f'   window.location.replace("{next_url}");'
         '}, false);'
         '</script>'
     )
@@ -300,8 +304,9 @@ def write_html(out_file: str, img_files: List[str], img_ids: List[str], height: 
     # Images.
     for idx, img_file in enumerate(img_files):
         title = os.path.splitext(os.path.basename(img_file))[0]
+        img_url = urllib.parse.quote(img_file.replace('\\', '/')).replace('%3A', ':')
         html += (
-            f'<img src="file://{img_file}" title="{title}" class="img" id="{img_ids[idx]}">'
+            f'<img src="file://{img_url}" title="{title}" class="img" id="{img_ids[idx]}">'
         )
     html += '<div style="flex-grow: 1e10;"></div>'
 
