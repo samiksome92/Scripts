@@ -13,6 +13,7 @@ This is simply a collection of scripts to make my life easier.
 
 ## Python Scripts
 - [`crop.py`](#croppy)
+- [`fortiauth.py`](#fortiauthpy)
 - [`gallery.py`](#gallerypy)
 - [`gif2mkv.py`](#gif2mkvpy)
 - [`imcompare.py`](#imcomparepy)
@@ -65,6 +66,18 @@ It works well if the actual region of interest has the most edges, otherwise it 
 
 ## `desktopWikipedia.js`
 A simple user script to redirect mobile english wikipedia links to their desktop versions. The script replaces `*.m.wikipedia.org` with `*.wikipedia.org` in url to achieve this.
+
+---
+
+## `fortiauth.py`
+A script to automatically login to fortinet firewall captive portal.
+
+Given a username and password this script automatically monitors the network and logs in to the fortinet captive portal when needed. It also send keepalive requests periodically to maintain the login.
+
+### Requirements
+- `requests`
+
+Simply run the script to use it.
 
 ---
 
