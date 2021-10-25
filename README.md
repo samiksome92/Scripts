@@ -77,7 +77,22 @@ Given a username and password this script automatically monitors the network and
 ### Requirements
 - `requests`
 
-Simply run the script to use it.
+### Usage
+    fortiauth.py [-h] [-u USERNAME] [-p PASSWORD] [-r RETRY_TIME] [-k KEEPALIVE_TIME]
+
+optional arguments:
+
+    -h, --help            show this help message and exit
+    -u USERNAME, --username USERNAME
+                        Username
+    -p PASSWORD, --password PASSWORD
+                          Password
+    -r RETRY_TIME, --retry_time RETRY_TIME
+                          Seconds to wait before retrying
+    -k KEEPALIVE_TIME, --keepalive_time KEEPALIVE_TIME
+                          Seconds to wait between keepalives
+
+If username/password is not supplied the script will prompt for them. By default `retry_time` is 30s and `keepalive_time` is 60s.
 
 ---
 

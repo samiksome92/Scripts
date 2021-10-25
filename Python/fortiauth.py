@@ -6,6 +6,7 @@ Given a username and password this script automatically monitors the network and
 when needed. It also send keepalive requests periodically to maintain the login.
 """
 
+import argparse
 import getpass
 import logging
 import re
@@ -14,12 +15,11 @@ import signal
 import time
 from typing import Tuple, Union
 
-USERNAME = input("Username: ")
-PASSWORD = getpass.getpass("Password: ")
+# URL constants.
 ONE_ONE_ONE_ONE = 'http://1.1.1.1/'
 ONE_ONE_ONE_ONE_HTTPS = 'https://1.1.1.1/'
-RETRY_TIME = 30
-KEEPALIVE_TIME = 60
+
+# Using globals here help bypass passing a few arguments.
 logged_in = False
 logout_url = ''
 
@@ -38,6 +38,30 @@ def interrupt_handler(sig, frame):
         logging.info('Exiting.')
 
     exit()
+
+
+def get_credentials(pass_only: bool) -> Tuple[Union[str, None], str]:
+    """Prompt for credential input.
+
+    Parameters
+    ----------
+    pass_only : bool
+        If True only prompts for password.
+
+    Returns
+    -------
+    username : str | None
+        Username. If pass_only is True this is None.
+    password : str
+        Password.
+    """
+    # Get username/password.
+    username = None
+    if not pass_only:
+        username = input('Username: ')
+    password = getpass.getpass('Password: ')
+
+    return username, password
 
 
 def state_check() -> Tuple[bool, requests.Response]:
@@ -66,11 +90,15 @@ def state_check() -> Tuple[bool, requests.Response]:
         return False, response
 
 
-def login(response: requests.Response) -> Tuple[bool, Union[requests.Response, None]]:
+def login(username: str, password: str, response: requests.Response) -> Tuple[bool, Union[requests.Response, None]]:
     """Try logging in to the network via the captive portal.
 
     Parameters
     ----------
+    username : str
+        Username.
+    Password : str
+        Password.
     response : requests.Response
         Response object for captive portal.
 
@@ -96,8 +124,8 @@ def login(response: requests.Response) -> Tuple[bool, Union[requests.Response, N
 
     # Prepare data.
     data = {
-        'username': USERNAME,
-        'password': PASSWORD,
+        'username': username,
+        'password': password,
         'magic': magic,
         '4Tredir': '/'
     }
@@ -125,13 +153,15 @@ def login(response: requests.Response) -> Tuple[bool, Union[requests.Response, N
     return True, response
 
 
-def keepalive(url: str) -> None:
+def keepalive(url: str, keepalive_time: int) -> None:
     """Send keepalive requests.
 
     Parameters
     ----------
     url : str
-        The keepalive url.
+        Keepalive url.
+    keepalive_time : int
+        Seconds to wait between keepalive requests.
     """
     global logged_in
 
@@ -146,8 +176,8 @@ def keepalive(url: str) -> None:
 
         # Ensure that no redirect occurs.
         if response.status_code == 200 and response.url == url:
-            logging.info(f'Keeping alive ({KEEPALIVE_TIME} secs) ...')
-            time.sleep(KEEPALIVE_TIME)
+            logging.info(f'Keeping alive ({keepalive_time} secs) ...')
+            time.sleep(keepalive_time)
             continue
 
         else:
@@ -158,6 +188,27 @@ def keepalive(url: str) -> None:
 
 def main() -> None:
     """Main function for the script."""
+    # Parse arguments.
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-u', '--username', help='Username', default=None)
+    parser.add_argument('-p', '--password', help='Password', default=None)
+    parser.add_argument('-r', '--retry_time', help='Seconds to wait before retrying', type=int, default=30)
+    parser.add_argument('-k', '--keepalive_time', help='Seconds to wait between keepalives', type=int, default=60)
+    args = parser.parse_args()
+
+    # Get credentials if needed.
+    if args.username is None and args.password is None:
+        username, password = get_credentials(False)
+    elif args.username is None and args.password is not None:
+        print('Please supply a username.')
+        exit()
+    elif args.username is not None and args.password is None:
+        username: str = args.username
+        _, password = get_credentials(True)
+    else:
+        username: str = args.username
+        password: str = args.password
+
     # Setup logging.
     logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO)
 
@@ -171,20 +222,20 @@ def main() -> None:
 
         # If already logged in, wait for a while and retry.
         if status:
-            logging.info(f'Seems to be already logged in. Sleeping for {RETRY_TIME} seconds.')
-            time.sleep(RETRY_TIME)
+            logging.info(f'Seems to be already logged in. Sleeping for {args.retry_time} seconds.')
+            time.sleep(args.retry_time)
             continue
 
         # If not logged in, try to log in.
         logging.info(f'Not logged in. Captive portal url: {response.url}')
-        status, response = login(response)
+        status, response = login(username, password, response)
 
         # If log in was unsuccessful retry loop.
         if not status:
             continue
 
         # Send keepalive requests.
-        keepalive(response.url)
+        keepalive(response.url, args.keepalive_time)
 
 
 if __name__ == '__main__':
