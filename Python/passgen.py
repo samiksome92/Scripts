@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # TODO: Improve and add to README.md.
 
 import argparse
