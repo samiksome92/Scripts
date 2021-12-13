@@ -2,8 +2,9 @@
 
 """A script to convert a text file from one encoding to another.
 
-Both the input and output encodings have to be specified. In addition one can specify line endings to use for the output
-file. If no specific line ending is provided, line endings are the same as in input file.
+Both input and output encodings can be specified. If input encoding is not specified best guess is used. In addition
+one can specify line endings to use for the output file. If no specific line ending is provided, line endings are the
+same as in input file.
 """
 
 import argparse
@@ -11,13 +12,15 @@ import codecs
 import os
 import sys
 
+import charset_normalizer
+
 
 def main() -> None:
     # Parse arguments.
     parser = argparse.ArgumentParser()
     parser.add_argument('txt_file', help='Text file to process')
-    parser.add_argument('-f', '--from', dest='from_', help='Source encoding to convert from', required=True)
-    parser.add_argument('-t', '--to', help='Target encoding to convert to', required=True)
+    parser.add_argument('-f', '--from', dest='from_', help='Source encoding to convert from')
+    parser.add_argument('-t', '--to', help='Target encoding to convert to', default='UTF-8')
     parser.add_argument('-l', '--newline', help='Line ending to use', choices=['lf', 'crlf', 'cr'], default='')
     parser.add_argument('-o', '--out_file', help='Output file', default=None)
     parser.add_argument('--overwrite', help='Overwrite text file', action='store_true')
@@ -25,11 +28,18 @@ def main() -> None:
 
     # Check if encodings are valid.
     try:
-        codecs.lookup(args.from_)
+        if args.from_ is not None:
+            codecs.lookup(args.from_)
         codecs.lookup(args.to)
     except LookupError as error:
         print(f'ERROR: {error}.')
         sys.exit(1)
+
+    # Detect encoding using charset_normalizer if source encoding is not provided.
+    if args.from_ is None:
+        with open(args.txt_file, 'rb') as file_obj:
+            args.from_ = charset_normalizer.detect(file_obj.read())['encoding']
+        print(f'Using {args.from_} as source encoding.')
 
     # Set output file.
     if args.overwrite:

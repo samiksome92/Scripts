@@ -310,10 +310,13 @@ A script to redirect image urls from twitter to show the original image rather t
 ## `txtconv.py`
 A script to convert a text file from one encoding to another.
 
-Both input and output encodings have to be specified. In addition one can specify line endings to use for the output file. If no specific line ending is provided, line endings are the same as in input file.
+Both input and output encodings can be specified. If input encoding is not specified best guess is used. In addition one can specify line endings to use for the output file. If no specific line ending is provided, line endings are the same as in input file.
+
+### Requirements
+- `charset_normalizer`
 
 ### Usage
-    txtconv [-h] -f FROM_ -t TO [-l {lf,crlf,cr}] [-o OUT_FILE] [--overwrite] txt_file
+    txtconv [-h] [-f FROM_] [-t TO] [-l {lf,crlf,cr}] [-o OUT_FILE] [--overwrite] txt_file
 
 positional arguments:
 
@@ -331,4 +334,4 @@ optional arguments:
                           Output file
     --overwrite           Overwrite text file
 
-Input and output encoding have to be specified using `--from` and `--to` respectively. Line endings can be specified using `--newline` (Valid choices are `lf`, `crlf` and `cr`). If `--overwrite` is specified, the input file is overwritten, otherwise a new output file is created. Output file name may be provided using `--out_file`.
+Input and output encoding can be specified using `--from` and `--to` respectively. If no input encoding is specified `charset_normalizer` is used to detect it. The default output encoding is `UTF-8`. Line endings can be specified using `--newline` (Valid choices are `lf`, `crlf` and `cr`). If `--overwrite` is specified, the input file is overwritten, otherwise a new output file is created. Output file name may be provided using `--out_file`.
