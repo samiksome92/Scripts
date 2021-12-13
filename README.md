@@ -18,6 +18,7 @@ This is simply a collection of scripts to make my life easier.
 - [`gif2mkv.py`](#gif2mkvpy)
 - [`imcompare.py`](#imcomparepy)
 - [`makecbz.py`](#makecbzpy)
+- [`passgen.py`](#passgenpy)
 
 ## `AutoClick.ahk`
 A simple script to automatically click repeatedly via a toggle switch. The time in between clicks can be changed by setting the SLEEP_TIME variable to appropriate value in milliseconds.
@@ -265,6 +266,38 @@ Primary use is searching for torrents of a series and grabbing all magnet links 
 A simple user script variant of the Old Reddit Redirect extension by Tom Watson ([GitHub](https://github.com/tom-james-watson/old-reddit-redirect)).
 
 This was created so that if one is already using a user script manager extension (Greasemonkey, Tampermonkey, Violentmonkey, etc.), then they don't need another extension simply for old reddit redirection.
+
+---
+
+## `passgen.py`
+A simple password generator.
+
+Generates a secure random password of a given length using the secrets library. By default passwords include lowercase letters, uppercase letters and digits, but not symbols. Options are provided to enable or disable any of the afore mentioned sets. Additionally one can also provide a set of custom symbols.
+
+### Requirements
+- `pyperclip`
+
+### Usage
+    passgen [-h] [-l LENGTH] [-a] [-na] [-A] [-nA] [-1] [-n1] [-@] [-n@] [--valid_symbols VALID_SYMBOLS] [-c]
+
+optional arguments:
+
+    -h, --help            show this help message and exit
+    -l LENGTH, --length LENGTH
+                          Length of the generated password
+    -a, --lowercase       Use lowercase letters
+    -na, --no_lowercase   Don't use lowercase letters
+    -A, --uppercase       Use uppercase letters
+    -nA, --no_uppercase   Don't use uppercase letters
+    -1, --digits          Use digits
+    -n1, --no_digits      Don't use digits
+    -@, --symbols         Use symbols
+    -n@, --no_symbols     Don't use symbols
+    --valid_symbols VALID_SYMBOLS
+                          Provide a string of characters to use as symbols
+    -c, --clipboard       Copy generated password to clipboard instead of displaying it
+
+The length of the password can be specified using `--length` (Default is 15 characters). `--lowercase`, `--no_lowercase`, `--uppercase`, `--no_uppercase`, `--digits`, `--no_digits`, `--symbols`, `--no_symbols` control which characters can be used to generate the password. In addition one can provide a custom string of characters via `--valid_symbols` to act as the symbols set. If `--clipboard` is specified the password is copied to clipboard using `pyperclip`, otherwise it is displayed.
 
 ---
 
