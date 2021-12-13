@@ -19,6 +19,7 @@ This is simply a collection of scripts to make my life easier.
 - [`imcompare.py`](#imcomparepy)
 - [`makecbz.py`](#makecbzpy)
 - [`passgen.py`](#passgenpy)
+- [`txtconv.py`](#txtconvpy)
 
 ## `AutoClick.ahk`
 A simple script to automatically click repeatedly via a toggle switch. The time in between clicks can be changed by setting the SLEEP_TIME variable to appropriate value in milliseconds.
@@ -303,3 +304,31 @@ The length of the password can be specified using `--length` (Default is 15 char
 
 ## `twitterImage.js`
 A script to redirect image urls from twitter to show the original image rather than one of the twitter resized versions. Simply replaces the last part of image urls with `=orig`.
+
+---
+
+## `txtconv.py`
+A script to convert a text file from one encoding to another.
+
+Both input and output encodings have to be specified. In addition one can specify line endings to use for the output file. If no specific line ending is provided, line endings are the same as in input file.
+
+### Usage
+    txtconv [-h] -f FROM_ -t TO [-l {lf,crlf,cr}] [-o OUT_FILE] [--overwrite] txt_file
+
+positional arguments:
+
+    txt_file              Text file to process
+
+optional arguments:
+
+    -h, --help            show this help message and exit
+    -f FROM_, --from FROM_
+                          Source encoding to convert from
+    -t TO, --to TO        Target encoding to convert to
+    -l {lf,crlf,cr}, --newline {lf,crlf,cr}
+                          Line ending to use
+    -o OUT_FILE, --out_file OUT_FILE
+                          Output file
+    --overwrite           Overwrite text file
+
+Input and output encoding have to be specified using `--from` and `--to` respectively. Line endings can be specified using `--newline` (Valid choices are `lf`, `crlf` and `cr`). If `--overwrite` is specified, the input file is overwritten, otherwise a new output file is created. Output file name may be provided using `--out_file`.
