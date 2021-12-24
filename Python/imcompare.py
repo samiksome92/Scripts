@@ -158,10 +158,8 @@ def similarity(img_1: dict, img_2: dict, resolution: int = 100) -> float:
     # Read images (via numpy to support unicode paths), convert to grayscale and resize.
     im_1 = np.fromfile(img_1['path'], dtype='uint8')
     im_2 = np.fromfile(img_2['path'], dtype='uint8')
-    im_1 = cv2.imdecode(im_1, cv2.IMREAD_UNCHANGED)
-    im_2 = cv2.imdecode(im_2, cv2.IMREAD_UNCHANGED)
-    im_1 = cv2.cvtColor(im_1, cv2.COLOR_BGR2GRAY)
-    im_2 = cv2.cvtColor(im_2, cv2.COLOR_BGR2GRAY)
+    im_1 = cv2.imdecode(im_1, cv2.IMREAD_GRAYSCALE)
+    im_2 = cv2.imdecode(im_2, cv2.IMREAD_GRAYSCALE)
     im_1 = cv2.resize(im_1, (width, height))
     im_2 = cv2.resize(im_2, (width, height))
 
