@@ -11,6 +11,9 @@ This is simply a collection of scripts to make my life easier.
 - [`oldReddit.js`](#oldRedditjs)
 - [`twitterImage.js`](#twitterImagejs)
 
+## PowerShell Scripts
+- [`Start-Sandbox.ps1`](#Start-Sandboxps1)
+
 ## Python Scripts
 - [`crop.py`](#croppy)
 - [`fortiauth.py`](#fortiauthpy)
@@ -299,6 +302,59 @@ optional arguments:
     -c, --clipboard       Copy generated password to clipboard instead of displaying it
 
 The length of the password can be specified using `--length` (Default is 15 characters). `--lowercase`, `--no_lowercase`, `--uppercase`, `--no_uppercase`, `--digits`, `--no_digits`, `--symbols`, `--no_symbols` control which characters can be used to generate the password. In addition one can provide a custom string of characters via `--valid_symbols` to act as the symbols set. If `--clipboard` is specified the password is copied to clipboard using `pyperclip`, otherwise it is displayed.
+
+---
+
+## `Start-Sandbox.ps1`
+Starts a sandbox with provided configuration options.
+
+### Usage
+SYNTAX
+
+    Start-Sandbox.ps1 [[-vGPU] <String>] [[-Networking] <String>] [[-MappedFolders] <Hashtable[]>] 
+    [[-LogonCommand] <String>] [[-AudioInput] <String>] [[-VideoInput] <String>] [[-ProtectedClient] <String>]
+    [[-PrinterRedirection] <String>] [[-ClipboardRedirection] <String>] [[-MemoryInMB] <Int32>] [<CommonParameters>]
+
+PARAMETERS
+
+    -vGPU <String>
+        If True turns on vGPU. False disables it. For any other value default setting is used.
+
+    -Networking <String>
+        If True turns on networking. False disables it. For any other value default setting is used.
+
+    -MappedFolders <Hashtable[]>
+        Array of folders to map in the sandbox. Input should be an array of hashmaps with keys HostFolder,
+        SandboxFolder and ReadOnly.
+
+    -LogonCommand <String>
+        Command to execute upon logging on.
+
+    -AudioInput <String>
+        If True turns on audio input. False disables it. For any other value default setting is used.
+
+    -VideoInput <String>
+        If True turns on video input. False disables it. For any other value default setting is used.
+
+    -ProtectedClient <String>
+        If True turns on protected client. False disables it. For any other value default setting is used.
+
+    -PrinterRedirection <String>
+        If True turns on printer redirection. False disables it. For any other value default setting is used.
+
+    -ClipboardRedirection <String>
+        If True turns on clipboard redirection. False disables it. For any other value default setting is used.
+
+    -MemoryInMB <Int32>
+        The memory to be used in MB.
+
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https:/go.microsoft.com/fwlink/?LinkID=113216).
+
+Uses provided configuration options to create a temporary .wsb file. Windows Sandbox is then started with this configuration. Supports all current configuration options available for Windows Sandbox.
 
 ---
 
