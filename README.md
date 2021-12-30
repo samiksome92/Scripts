@@ -21,6 +21,7 @@ This is simply a collection of scripts to make my life easier.
 - [`gif2mkv.py`](#gif2mkvpy)
 - [`imcompare.py`](#imcomparepy)
 - [`makecbz.py`](#makecbzpy)
+- [`nocache.http.server.py`](#nocachehttpserverpy)
 - [`passgen.py`](#passgenpy)
 - [`txtconv.py`](#txtconvpy)
 
@@ -256,6 +257,11 @@ If `--jpeg` is speicified all images are converted to JPEG. Similarly if `--png`
 If `--merge_dirs` is specified images in sub-directories are moved to the parent directory while appending the sub-directory's name before it. Useful if the comic contains logical parts which should have a common prefix (Should generally be used along with `--no-rename` to keep said prefixes).
 
 `--no-rename` if specified keeps the original file names of the images, otherwise they are renamed as `01.jpg`, `02.jpg`, `03.jpg`, ... (the numbers are padded with as many zeros as required). `--delete` if specified deletes the original image files as well as the directory.
+
+---
+
+## `nocache.http.server.py`
+A script implementing a simple http server with custom cache control headers. Usage is same as http.server.
 
 ---
 
