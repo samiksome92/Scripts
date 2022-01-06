@@ -105,14 +105,14 @@ If username/password is not supplied the script will prompt for them. By default
 ## `gallery.py`
 This script takes a directory as input and shows all images inside it as a gallery.
 
-The script scans a given directory for supported image files. It then generates HTML pages for a gallery populated with found images. Once the HTML files have been created, the gallery is shown using the default web browser. Supports keyboard and mouse navigation.
+The script scans a given directory for supported image files. It then generate a HTML page for a gallery populated with found images. Once the HTML file has been created, the gallery is shown using the default web browser. Supports keyboard and mouse navigation.
 
 ### Requirements
 - `pillow`
 - `tqdm`
 
 ### Usage
-    gallery.py [-h] [-r] [-t HEIGHT] [-p PADDING] [-b ...] dir_path
+    gallery.py [-h] [-r] [-t HEIGHT] [-p PADDING] [-n] [-s] [-b ...] dir_path
 
 positional arguments
 
@@ -126,6 +126,8 @@ optional arguments:
                           Height of each row in pixels
     -p PADDING, --padding PADDING
                           Padding between images
+    -n, --no_resize       Do not resize images for thumnails.
+    -s, --as_server       Run a http server
     -b ..., --browser ...
                           Custom browser command (arguments supported)
 
@@ -138,6 +140,10 @@ The images can be clicked to go into single view mode, where only that image is 
 By default padding of 5px is used but can be overridden using `--padding` parameter. Similarly the default height of each row is 300px and can be overridden by specifying `--height`.
 
 If `--randomize` is specified, the order of the images will be randomized (it will still try to keep multipart images, such as `img1`, `img2`, etc., together). Without `--randomize` the images are laid out in alphabetical order.
+
+By default all images are resized for thumbnails. Using `--no_resize` disables this, which means the gallery launches much faster but images may load slowly if they are large.
+
+If `--as_server` is specified a simple local HTTP server is run and the browser is pointed to that. Otherwise, the browser is simply pointed to the local HTML file.
 
 Finally, a custom browser can be used via the parameter `--browser`. Arguments to said browser command can also be provided.
 
