@@ -14,18 +14,16 @@ import platform
 import posixpath
 import random
 import re
-import socket
 import socketserver
-import string
 import subprocess
 from typing import Any, Dict, List, Union
 import urllib
+import uuid
 
 from PIL import Image
 from tqdm import tqdm
 
 SUPPORTED_FORMATS = ['JPEG', 'PNG', 'GIF', 'WEBP']
-ID_ALPHABET = string.ascii_letters + string.digits
 
 # Command to open default browser in Windows and Linux.
 SYSTEM = platform.system()
@@ -279,11 +277,11 @@ def write_html(
         '   display: flex;'
         '   flex-wrap: wrap;'
         f'  margin: {padding}px;'
+        f'  gap: {padding}px;'
         '   background-color: #212121;'
         '}'
         '.img {'
         f'  height: {height}px;'
-        f'  margin: {padding}px;'
         '   flex-grow: 1;'
         '   object-fit: cover;'
         '   box-sizing: border-box;'
@@ -762,9 +760,9 @@ def create_gallery(
     # Create ids for images.
     img_ids = []
     for _ in img_files:
-        img_id = ''.join(random.choices(ID_ALPHABET, k=32))
+        img_id = uuid.uuid4().hex
         while img_id in img_ids:
-            img_id = ''.join(random.choices(ID_ALPHABET, k=32))
+            img_id = uuid.uuid4().hex
         img_ids.append(img_id)
 
     if not no_resize:
