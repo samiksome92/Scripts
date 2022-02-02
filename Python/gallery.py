@@ -11,12 +11,11 @@ import argparse
 import http.server
 import os
 import platform
-import posixpath
 import random
 import re
 import socketserver
 import subprocess
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 import urllib
 import uuid
 
@@ -25,69 +24,38 @@ from tqdm import tqdm
 
 SUPPORTED_FORMATS = ['JPEG', 'PNG', 'GIF', 'WEBP']
 
-# Command to open default browser in Windows and Linux.
+# System specific globals.
 SYSTEM = platform.system()
 if SYSTEM == 'Windows':
     BROWSER = ['explorer']
+    OUT_DIR = os.path.join(os.environ['LOCALAPPDATA'], 'gallery.py')
 elif SYSTEM == 'Linux':
     BROWSER = ['xdg-open']
+    OUT_DIR = os.path.join(os.environ['HOME'], '.local', 'share', 'gallery.py')
 
 
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     """Custom http request handler.
 
-    This class extends SimpleHTTPRequestHandler and adds support for absolute file paths by overriding translate_path.
-    In order to do this it first considers the path to be relative. If the relative path exists then it is used,
-    otherwise the absolute path is used.
+    Extends SimpleHTTPRequestHandler and adds support for gallery requests.
     """
 
     def translate_path(self, path: str) -> str:
-        """Translate a /-separated PATH to the local filename syntax.
+        """Overrides translate_path to use custom path formats."""
+        path = urllib.parse.unquote(path)
 
-        Components that mean special things to the local file system
-        (e.g. drive or directory names) are ignored.  (XXX They should
-        probably be diagnosed.)
+        # If root serve index.html.
+        if (path == '' or path == '/'):
+            path = os.path.join(OUT_DIR, 'index.html')
 
-        """
-        # abandon query parameters
-        path = path.split('?', 1)[0]
-        path = path.split('#', 1)[0]
-        # Don't forget explicit trailing slash when normalizing. Issue17324
-        trailing_slash = path.rstrip().endswith('/')
-        try:
-            path = urllib.parse.unquote(path, errors='surrogatepass')
-        except UnicodeDecodeError:
-            path = urllib.parse.unquote(path)
-        path = posixpath.normpath(path)
-        words = path.split('/')
-        words = list(filter(None, words))
+        # If id serve thumbnail.
+        elif (path.startswith('/i/')):
+            path = os.path.join(OUT_DIR, path[3:]+'.png')
 
-        # Relative path.
-        rel_path = self.directory
-        for word in words:
-            if os.path.dirname(word) or word in (os.curdir, os.pardir):
-                # Ignore components that are not a simple file/directory name
-                continue
-            rel_path = os.path.join(rel_path, word)
+        # If raw serve image.
+        elif (path.startswith('/r/')):
+            path = path[3:]
 
-        # Absolute path.
-        if SYSTEM == 'Windows':
-            abs_path = words[0] if len(words) > 0 else ''
-        elif SYSTEM == 'Linux':
-            abs_path = '/'
-        for word in words:
-            if os.path.dirname(word) or word in (os.curdir, os.pardir):
-                # Ignore components that are not a simple file/directory name
-                continue
-            abs_path = os.path.join(abs_path, word)
-
-        # If relative path exists, use it, else use absolute path.
-        if os.path.exists(rel_path):
-            path = rel_path
-        else:
-            path = abs_path
-
-        # Trailing slash seems to causing issues on Firefox, so it has been removed.
         return path
 
 
@@ -196,7 +164,7 @@ def randomize_imgs(img_files: List[str]) -> List[str]:
     return img_files
 
 
-def resize_imgs(img_files: List[str], img_ids: List[str], out_dir: str, height: int = 300) -> None:
+def resize_imgs(img_files: List[str], img_ids: List[str], height: int = 300) -> None:
     """Resize images and save them in provided directory.
 
     Parameters
@@ -205,8 +173,6 @@ def resize_imgs(img_files: List[str], img_ids: List[str], out_dir: str, height: 
         List of images.
     img_ids : List[str]
         IDs of images.
-    out_dir : str
-        Output directory.
     height : int, optional
         Height to resize to. (default=300)
     """
@@ -221,18 +187,16 @@ def resize_imgs(img_files: List[str], img_ids: List[str], out_dir: str, height: 
             nw = int(w/h*height)
             nh = height
             img = img.resize((nw, nh), resample=Image.BICUBIC)
-            img.save(os.path.join(out_dir, img_id+'.png'))
+            img.save(os.path.join(OUT_DIR, img_id+'.png'))
 
 
 def write_html(
     img_files: List[str],
     img_ids: List[str],
     img_infos: Dict[str, Dict],
-    out_dir: str,
     height: int = 300,
     padding: int = 5,
     no_resize: bool = False,
-    as_server: bool = False,
 ) -> None:
     """Writes out the html for the gallery.
 
@@ -252,8 +216,6 @@ def write_html(
         Padding between items. (default=5)
     no_resize : bool, optional
         Do not resize images for thumbnails if True. (default=False)
-    as_server : bool, optional
-        Run a http server instead of opening the HTML file directly. (default=False)
     """
     # HTML start.
     html = (
@@ -325,18 +287,16 @@ def write_html(
     # Image gallery.
     for img_file, img_id in zip(img_files, img_ids):
         title = os.path.splitext(os.path.basename(img_file))[0]
-        img_url: str = urllib.parse.quote(img_file.replace('\\', '/')).replace('%3A', ':')
+        img_url: str = urllib.parse.quote(img_file)
         info = img_infos[img_file]
 
-        if as_server:
-            img_url = 'http://127.0.0.1:8000/'+img_url
-        else:
-            img_url = 'file://'+img_url
+        raw_img_url = 'http://127.0.0.1:8000/r/'+img_url
+        id_img_url = 'http://127.0.0.1:8000/i/'+img_id
 
         if no_resize:
-            html += f'<img src="{img_url}" title="{title}" class="img" id="{img_id}" data-url="{img_url}" data-w="{info["w"]}" data-h="{info["h"]}">'
+            html += f'<img src="{raw_img_url}" title="{title}" class="img" id="{img_id}" data-url="{raw_img_url}" data-w="{info["w"]}" data-h="{info["h"]}">'
         else:
-            html += f'<img src="{img_id}.png" title="{title}" class="img" id="{img_id}" data-url="{img_url}" data-w="{info["w"]}" data-h="{info["h"]}">'
+            html += f'<img src="{id_img_url}" title="{title}" class="img" id="{img_id}" data-url="{raw_img_url}" data-w="{info["w"]}" data-h="{info["h"]}">'
     html += '<div style="flex-grow: 1e10;"></div></div>'
 
     # Image viewer.
@@ -698,7 +658,7 @@ def write_html(
         '</html>'
     )
 
-    with open(os.path.join(out_dir, 'index.html'), 'w', encoding='utf8') as file_obj:
+    with open(os.path.join(OUT_DIR, 'index.html'), 'w', encoding='utf8') as file_obj:
         file_obj.write(html)
 
 
@@ -708,10 +668,7 @@ def create_gallery(
     height: int = 300,
     padding: int = 5,
     no_resize: bool = False,
-    as_server: bool = False,
-
-
-) -> Union[str, None]:
+) -> bool:
     """Given a directory scan it for images and create a gallery for the same.
 
     Parameters
@@ -726,32 +683,23 @@ def create_gallery(
         Padding between images. (default=5)
     no_resize : bool, optional
         Do not resize images for thumbnails if True. (default=False)
-    as_server : bool, optional
-        Run a http server instead of opening the HTML file directly. (default=False)
 
     Returns
     -------
-    str | None
-        Path to gallery HTML or None if there were no images in directory.
+    bool
+        Whether gallery was created or not.
     """
-    # Create directories to store the html files.
-    if SYSTEM == 'Windows':
-        out_dir = os.path.join(os.environ['LOCALAPPDATA'], 'gallery.py')  # Use AppData\Local in Windows.
-    elif SYSTEM == 'Linux':
-        out_dir = os.path.join(os.environ['HOME'], '.local', 'share', 'gallery.py')  # Use .local/share in Linux.
-    os.makedirs(out_dir, exist_ok=True)
-
-    # Clean older files from directory.
-    old_files = os.listdir(out_dir)
+    # Clean old files from directory.
+    old_files = os.listdir(OUT_DIR)
     for file in old_files:
-        os.remove(os.path.join(out_dir, file))
+        os.remove(os.path.join(OUT_DIR, file))
 
     # Get all images.
     img_files, img_infos = get_img_files(dir_path)
 
-    # If no images are found return None.
+    # If no images are found return False.
     if len(img_files) == 0:
-        return None
+        return False
 
     # Randomize images if needed.
     if randomize:
@@ -767,53 +715,45 @@ def create_gallery(
 
     if not no_resize:
         # Resize the images for thumbnails.
-        resize_imgs(img_files, img_ids, out_dir, height)
+        resize_imgs(img_files, img_ids, height)
 
     # Write out HTML file.
-    write_html(img_files, img_ids, img_infos, out_dir, height, padding, no_resize, as_server)
+    write_html(img_files, img_ids, img_infos, height, padding, no_resize)
 
-    return os.path.join(out_dir, 'index.html')
+    return True
 
 
-def open_gallery(html_path: str, browser: List[str] = BROWSER, as_server: bool = False) -> None:
+def open_gallery(browser: List[str] = BROWSER) -> None:
     """Given a path open it in the browser.
 
     Parameters
     ----------
-    html_path : str
-        Path to HTML file.
     browser : List[str]
         Command line for browser.
-    as_server : bool, optional
-        Run a http server instead of opening the HTML file directly. (default=False)
     """
-    if as_server:
-        subprocess.Popen(browser + ['http://127.0.0.1:8000/index.html'])
-        os.chdir(os.path.dirname(html_path))
+    subprocess.Popen(browser + ['http://127.0.0.1:8000/'])
 
-        # Initialize server and setup socket reuse.
-        httpd = socketserver.TCPServer(('', 8000), HTTPRequestHandler, bind_and_activate=False)
-        httpd.allow_reuse_address = True
+    # Initialize server and setup socket reuse.
+    httpd = socketserver.TCPServer(('', 8000), HTTPRequestHandler, bind_and_activate=False)
+    httpd.allow_reuse_address = True
 
-        # Bind server.
-        try:
-            httpd.server_bind()
-            httpd.server_activate()
-            print('Serving at port 8000...')
-        except:
-            httpd.server_close()
-            raise
+    # Bind server.
+    try:
+        httpd.server_bind()
+        httpd.server_activate()
+        print('Serving at port 8000...')
+    except:
+        httpd.server_close()
+        raise
 
-        # Start serving.
-        try:
-            httpd.serve_forever()
-        except:
-            print('Shutting down server.')
-            httpd.shutdown()
-            httpd.server_close()
-            raise
-    else:
-        subprocess.run(browser + [html_path])
+    # Start serving.
+    try:
+        httpd.serve_forever()
+    except:
+        print('Shutting down server.')
+        httpd.shutdown()
+        httpd.server_close()
+        raise
 
 
 def main() -> None:
@@ -825,7 +765,6 @@ def main() -> None:
     parser.add_argument('-t', '--height', help='Height of each row in pixels', type=int, default=300)
     parser.add_argument('-p', '--padding', help='Padding between images', type=int, default=5)
     parser.add_argument('-n', '--no_resize', help='Do not resize images for thumnails.', action='store_true')
-    parser.add_argument('-s', '--as_server', help='Run a http server', action='store_true')
     parser.add_argument('-b', '--browser', help='Custom browser command (arguments supported)',
                         nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -837,10 +776,13 @@ def main() -> None:
     if args.browser is None:
         args.browser = BROWSER
 
+    # Create directories to store the html files.
+    os.makedirs(OUT_DIR, exist_ok=True)
+
     # Create gallery and then open it.
-    html_path = create_gallery(args.dir_path, args.randomize, args.height, args.padding, args.no_resize, args.as_server)
-    if html_path:
-        open_gallery(html_path, args.browser, args.as_server)
+    status = create_gallery(args.dir_path, args.randomize, args.height, args.padding, args.no_resize)
+    if status:
+        open_gallery(args.browser)
     else:
         print('No images were found in the directory.')
 

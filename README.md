@@ -127,7 +127,6 @@ optional arguments:
     -p PADDING, --padding PADDING
                           Padding between images
     -n, --no_resize       Do not resize images for thumnails.
-    -s, --as_server       Run a http server
     -b ..., --browser ...
                           Custom browser command (arguments supported)
 
@@ -142,8 +141,6 @@ By default padding of 5px is used but can be overridden using `--padding` parame
 If `--randomize` is specified, the order of the images will be randomized (it will still try to keep multipart images, such as `img1`, `img2`, etc., together). Without `--randomize` the images are laid out in alphabetical order.
 
 By default all images are resized for thumbnails. Using `--no_resize` disables this, which means the gallery launches much faster but images may load slowly if they are large.
-
-If `--as_server` is specified a simple local HTTP server is run and the browser is pointed to that. Otherwise, the browser is simply pointed to the local HTML file.
 
 Finally, a custom browser can be used via the parameter `--browser`. Arguments to said browser command can also be provided.
 
