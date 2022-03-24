@@ -327,10 +327,10 @@ SYNTAX
 PARAMETERS
 
     -vGPU <String>
-        If True turns on vGPU. False disables it. For any other value default setting is used.
+        Enable or disable vGPU. If not provided default is used.
 
     -Networking <String>
-        If True turns on networking. False disables it. For any other value default setting is used.
+        Disable networking. If not provided default is used.
 
     -MappedFolders <Hashtable[]>
         Array of folders to map in the sandbox. Input should be an array of hashmaps with keys HostFolder,
@@ -340,19 +340,19 @@ PARAMETERS
         Command to execute upon logging on.
 
     -AudioInput <String>
-        If True turns on audio input. False disables it. For any other value default setting is used.
+        Enable or disable audio input. If not provided default is used.
 
     -VideoInput <String>
-        If True turns on video input. False disables it. For any other value default setting is used.
+        Enable or disable video input. If not provided default is used.
 
     -ProtectedClient <String>
-        If True turns on protected client. False disables it. For any other value default setting is used.
+        Enable or disable protected client. If not provided default is used.
 
     -PrinterRedirection <String>
-        If True turns on printer redirection. False disables it. For any other value default setting is used.
+        Enable or disable printer redirection. If not provided default is used.
 
     -ClipboardRedirection <String>
-        If True turns on clipboard redirection. False disables it. For any other value default setting is used.
+        Disable clipboard redirection. If not provided default is used.
 
     -MemoryInMB <Int32>
         The memory to be used in MB.
