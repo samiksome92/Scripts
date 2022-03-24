@@ -113,14 +113,9 @@ def constant_fps_encode(frames_dir: str, durations: List[int], out_file: str) ->
         '-r', f'1000/{duration}',
         '-start_number', '0',
         '-i', f'{frames_dir}/%06d.png',
-        '-vf', (
-            'scale=out_color_matrix=bt709:out_range=full,'
-            'format=yuvj444p,'
-            'tpad=stop=1:stop_mode=clone'
-        ),
+        '-vf', 'tpad=stop=1:stop_mode=clone',
         '-c:v', 'libx265',
-        '-crf', '18',
-        '-x265-params', 'input-csp=i444:colormatrix=bt709',
+        '-crf', '12',
         '-an',
         f'{out_file}'
     ]
@@ -152,14 +147,9 @@ def variable_fps_encode(frames_dir: str, durations: List[int], out_file: str) ->
         '-r', f'1000/{ffmpeg_duration}',
         '-start_number', '0',
         '-i', f'{frames_dir}/%06d.png',
-        '-vf', (
-            'scale=out_color_matrix=bt709:out_range=full,'
-            'format=yuvj444p,'
-            'tpad=stop=1: stop_mode=clone'
-        ),
+        '-vf', 'tpad=stop=1: stop_mode=clone',
         '-c:v', 'libx265',
-        '-crf', '18',
-        '-x265-params', 'input-csp=i444:colormatrix=bt709',
+        '-crf', '12',
         '-an',
         os.path.join(frames_dir, os.path.basename(out_file))
     ]
