@@ -212,7 +212,7 @@ By default the images found in all directories are considered together and all p
 
 The similarities between images are calculate using structured similarity index (SSIM). Since evaluating SSIM over high resolution images is very costly, images are resized to fit a box whose size can be specified using `--resolution`. By default it is 100 x 100. To prune out further unlikely pairs if the difference in aspect ratio of two images is larger than `--max_aspect` they are not considered (default value is 0.1).
 
-Once similarities have been computed a GUI is started which shows image pairs in descending order of similarity so that the user can choose which ones to keep. Clicking on an image keeps it and discards the other. Clicking on the information area keeps both images. The process can be stopped any time by simply closing the window.
+Once similarities have been computed a GUI is started which shows image pairs in descending order of similarity so that the user can choose which ones to keep. Space cycles between the two images being compared, Enter keeps the image currently being shown and discards the other, N loads the next image pair without discarding either. The process can be stopped any time by simply closing the window.
 
 The discarded images are then renamed in place and `.discarded` is appended to their file names making it their extension.
 

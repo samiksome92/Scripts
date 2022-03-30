@@ -196,13 +196,17 @@ def start(img_pairs: List[tuple]) -> List[str]:
             """Constructor. Sets up first image pair."""
             QObject.__init__(self)
             self.pair_idx = 0
+            self.which = "left"
             self.img_left = img_pairs[self.pair_idx]['img_pair'][0]
             self.img_right = img_pairs[self.pair_idx]['img_pair'][1]
+            self.txt_left = ''
+            self.txt_right = ''
             self.score = img_pairs[self.pair_idx]['score']
+            self.maketext()
             self.update()
 
-        def update(self):
-            """Updates the image pair and associated status text."""
+        def maketext(self):
+            """Creates formatted status text."""
             format_left = self.img_left['format']
             width_left = self.img_left['width']
             height_left = self.img_left['height']
@@ -213,74 +217,73 @@ def start(img_pairs: List[tuple]) -> List[str]:
             height_right = self.img_right['height']
             size_right = self.img_right['size']
 
-            txt_left = ''
-            txt_right = ''
+            self.txt_left = f'{self.score*100:.2f}%&nbsp;&nbsp;&nbsp;&nbsp;'
+            self.txt_right = f'{self.score*100:.2f}%&nbsp;&nbsp;&nbsp;&nbsp;'
 
             # Consider PNG better than JPEG.
             if format_left == format_right:
-                txt_left += f'{format_left}<br>'
-                txt_right += f'{format_right}<br>'
+                self.txt_left += f'{format_left}&nbsp;&nbsp;&nbsp;&nbsp;'
+                self.txt_right += f'{format_right}&nbsp;&nbsp;&nbsp;&nbsp;'
             elif format_left == 'PNG' and format_right == 'JPEG':
-                txt_left += f'<font color="{COLOR_BETTER}">PNG</font><br>'
-                txt_right += f'<font color="{COLOR_WORSE}">JPEG</font><br>'
+                self.txt_left += f'<font color="{COLOR_BETTER}">PNG</font>&nbsp;&nbsp;&nbsp;&nbsp;'
+                self.txt_right += f'<font color="{COLOR_WORSE}">JPEG</font>&nbsp;&nbsp;&nbsp;&nbsp;'
             elif format_left == 'JPEG' and format_right == 'PNG':
-                txt_left += f'<font color="{COLOR_WORSE}">JPEG</font><br>'
-                txt_right += f'<font color="{COLOR_BETTER}">PNG</font><br>'
+                self.txt_left += f'<font color="{COLOR_WORSE}">JPEG</font>&nbsp;&nbsp;&nbsp;&nbsp;'
+                self.txt_right += f'<font color="{COLOR_BETTER}">PNG</font>&nbsp;&nbsp;&nbsp;&nbsp;'
             else:
-                txt_left += f'<font color="{COLOR_DIFF}">{format_left}</font><br>'
-                txt_right += f'<font color="{COLOR_DIFF}">{format_right}</font><br>'
+                self.txt_left += f'<font color="{COLOR_DIFF}">{format_left}</font>&nbsp;&nbsp;&nbsp;&nbsp;'
+                self.txt_right += f'<font color="{COLOR_DIFF}">{format_right}</font>&nbsp;&nbsp;&nbsp;&nbsp;'
 
             # If both width and height of one image is larger than the other consider it better.
             if width_left == width_right and height_left == height_right:
-                txt_left += f'{width_left} x {height_left}<br>'
-                txt_right += f'{width_right} x {height_right}<br>'
+                self.txt_left += f'{width_left} x {height_left}&nbsp;&nbsp;&nbsp;&nbsp;'
+                self.txt_right += f'{width_right} x {height_right}&nbsp;&nbsp;&nbsp;&nbsp;'
             elif width_left > width_right and height_left > height_right:
-                txt_left += f'<font color="{COLOR_BETTER}">{width_left} x {height_left}</font><br>'
-                txt_right += f'<font color="{COLOR_WORSE}">{width_right} x {height_right}</font><br>'
+                self.txt_left += f'<font color="{COLOR_BETTER}">{width_left} x {height_left}</font>&nbsp;&nbsp;&nbsp;&nbsp;'
+                self.txt_right += f'<font color="{COLOR_WORSE}">{width_right} x {height_right}</font>&nbsp;&nbsp;&nbsp;&nbsp;'
             elif width_left < width_right and height_left < height_right:
-                txt_left += f'<font color="{COLOR_WORSE}">{width_left} x {height_left}</font><br>'
-                txt_right += f'<font color="{COLOR_BETTER}">{width_right} x {height_right}</font><br>'
+                self.txt_left += f'<font color="{COLOR_WORSE}">{width_left} x {height_left}</font>&nbsp;&nbsp;&nbsp;&nbsp;'
+                self.txt_right += f'<font color="{COLOR_BETTER}">{width_right} x {height_right}</font>&nbsp;&nbsp;&nbsp;&nbsp;'
             else:
-                txt_left += f'<font color="{COLOR_DIFF}">{width_left} x {height_left}<br>'
-                txt_right += f'<font color="{COLOR_DIFF}">{width_right} x {height_right}<br>'
+                self.txt_left += f'<font color="{COLOR_DIFF}">{width_left} x {height_left}&nbsp;&nbsp;&nbsp;&nbsp;'
+                self.txt_right += f'<font color="{COLOR_DIFF}">{width_right} x {height_right}&nbsp;&nbsp;&nbsp;&nbsp;'
 
             # Larger size is better.
             if size_left == size_right:
-                txt_left += f'{filesize(size_left)}<br>'
-                txt_right += f'{filesize(size_right)}<br>'
+                self.txt_left += f'{filesize(size_left)}'
+                self.txt_right += f'{filesize(size_right)}'
             elif size_left > size_right:
-                txt_left += f'<font color="{COLOR_BETTER}">{filesize(size_left)}</font><br>'
-                txt_right += f'<font color="{COLOR_WORSE}">{filesize(size_right)}</font><br>'
+                self.txt_left += f'<font color="{COLOR_BETTER}">{filesize(size_left)}</font>'
+                self.txt_right += f'<font color="{COLOR_WORSE}">{filesize(size_right)}</font>'
             elif size_left < size_right:
-                txt_left += f'<font color="{COLOR_WORSE}">{filesize(size_left)}</font><br>'
-                txt_right += f'<font color="{COLOR_BETTER}">{filesize(size_right)}</font><br>'
+                self.txt_left += f'<font color="{COLOR_WORSE}">{filesize(size_left)}</font>'
+                self.txt_right += f'<font color="{COLOR_BETTER}">{filesize(size_right)}</font>'
             else:
-                txt_left += f'<font color="{COLOR_DIFF}">{filesize(size_left)}</font><br>'
-                txt_right += f'<font color="{COLOR_DIFF}">{filesize(size_right)}</font><br>'
+                self.txt_left += f'<font color="{COLOR_DIFF}">{filesize(size_left)}</font>'
+                self.txt_right += f'<font color="{COLOR_DIFF}">{filesize(size_right)}</font>'
 
-            txt_score = f'{self.score*100:.2f}%'
+        def update(self):
+            """Updates image and status text."""
+            if self.which == "left":
+                view.rootContext().setContextProperty('img', QUrl.fromLocalFile(self.img_left['path']))
+                view.rootContext().setContextProperty('txt', self.txt_left)
+            elif self.which == "right":
+                view.rootContext().setContextProperty('img', QUrl.fromLocalFile(self.img_right['path']))
+                view.rootContext().setContextProperty('txt', self.txt_right)
 
-            # Update images and text.
-            view.rootContext().setContextProperty('img_left', QUrl.fromLocalFile(self.img_left['path']))
-            view.rootContext().setContextProperty('img_right', QUrl.fromLocalFile(self.img_right['path']))
-            view.rootContext().setContextProperty('txt_left', txt_left)
-            view.rootContext().setContextProperty('txt_right', txt_right)
-            view.rootContext().setContextProperty('txt_score', txt_score)
+        @Slot()
+        def switch(self):
+            """Load the next image pair."""
+            if self.which == 'left':
+                self.which = 'right'
+            elif self.which == 'right':
+                self.which = 'left'
 
-        @Slot(str)
-        def next(self, chosen):
-            """Load the next image pair.
+            self.update()
 
-            Parameters
-            ----------
-            chosen : str
-                Which image was chosen for the last pair
-            """
-            if chosen == 'left':
-                discarded.add(self.img_right['path'])
-            elif chosen == 'right':
-                discarded.add(self.img_left['path'])
-
+        @Slot()
+        def next(self):
+            """Load the next image pair."""
             self.pair_idx += 1
 
             if self.pair_idx == len(img_pairs):
@@ -292,9 +295,21 @@ def start(img_pairs: List[tuple]) -> List[str]:
 
                 # If one of the images has already been discarded skip the pair.
                 if self.img_left['path'] in discarded or self.img_right['path'] in discarded:
-                    self.next('both')
+                    self.next()
 
+                self.which = "left"
+                self.maketext()
                 self.update()
+
+        @Slot()
+        def choose(self):
+            """Choose one of the images and load the next image pair."""
+            if self.which == 'left':
+                discarded.add(self.img_right['path'])
+            elif self.which == 'right':
+                discarded.add(self.img_left['path'])
+
+            self.next()
 
     # Register BackEnd class and load QML.
     backend = BackEnd()
