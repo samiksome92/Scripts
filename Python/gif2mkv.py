@@ -69,7 +69,7 @@ def get_durations(gif_file: str) -> List[int]:
         durations = []
         for frame in range(img.n_frames):
             img.seek(frame)
-            durations.append(max(10, img.info['duration']))
+            durations.append(100 if img.info['duration'] <= 10 else img.info['duration'])
 
     return durations
 
