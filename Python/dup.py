@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+
+"""Check for and remove duplicate files.
+
+Checks for duplicate files in given directories using hashing, followed by byte-by-byte comparison. By default it
+removes all duplicates it finds and outputs a list of deleted files. It can also be used to simply output the list of
+duplicates without deleting them.
+"""
+
+import argparse
+import filecmp
+import os
+from typing import Dict, List
+import zlib
+
+from tqdm import tqdm
+
+
+def crc32(file: str, chunk_size: int = 65536) -> str:
+    """Compute CRC32 checksum of a file using chunking.
+
+    Parameters
+    ----------
+    file : str
+        File path.
+    chunk_size : int
+        Chunk size in bytes. (default=65536)
+
+    Returns
+    -------
+    checksum : str
+        CRC32 checksum as hex string.
+    """
+    checksum = 0
+    with open(file, 'rb') as file_obj:
+        while True:
+            data = file_obj.read(chunk_size)
+            if not data:
+                break
+
+            checksum = zlib.crc32(data, checksum)
+    checksum = hex(checksum)[2:]
+
+    return checksum
+
+
+def find_dups(dirs: List[str]) -> List[str]:
+    """Check for duplicate files.
+
+    Parameters
+    ----------
+    dirs : List[str]
+        Directories to search.
+
+    Returns
+    -------
+    dup_files : List[str]
+        List of duplicates found.
+    """
+    dup_files: List[str] = []
+    hash2files: Dict[str, List[str]] = {}
+
+    dir_progress_bar = tqdm(dirs, bar_format='Checking directories |{bar:20}| {n_fmt}/{total_fmt}')
+    for dir in dir_progress_bar:
+        # Get list of files in directory.
+        files = sorted([os.path.join(dir, f) for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))])
+
+        file_progress_bar = tqdm(files, bar_format='Finding duplicates   |{bar:20}| {n_fmt}/{total_fmt}', leave=False)
+        for file in file_progress_bar:
+            # Compute CRC32 checksum. Since we'll do byte-by-byte comparisons if checksums match, using CRC32 is fine.
+            checksum = crc32(file)
+
+            # If checksum is already present compare against earlier files and see if it matches any.
+            if checksum in hash2files:
+                for oldfile in hash2files[checksum]:
+                    if filecmp.cmp(oldfile, file, shallow=False):
+                        dup_files.append(file)
+                        break
+                else:
+                    hash2files[checksum].append(file)  # Did not match any file. Hash collision. Add to list.
+            else:
+                hash2files[checksum] = [file]
+
+    return dup_files
+
+
+def main() -> None:
+    """Main function for the script."""
+    # Parse arguments.
+    parser = argparse.ArgumentParser()
+    parser.add_argument('dirs', help='Directories to search', nargs='+')
+    parser.add_argument('-f', '--find', help="Only find duplicates. Don't delete them", action='store_true')
+    parser.add_argument('-o', '--output', help='Output file with list of duplicates', default=None)
+    args = parser.parse_args()
+
+    # Get duplicates.
+    dup_files = find_dups(args.dirs)
+
+    if len(dup_files) == 0:
+        print('No duplicates found.')
+        return
+
+    # If --find is not given delete the duplicates.
+    if not args.find:
+        print('Removing duplicates ...')
+        for dup_file in dup_files:
+            print(f'\t{os.path.normpath(dup_file)}')
+            os.remove(dup_file)
+        print(f'Removed {len(dup_files)} duplicates.')
+    else:
+        print(f'Found {len(dup_files)} duplicates ...')
+        for dup_file in dup_files:
+            print(f'\t{os.path.normpath(dup_file)}')
+
+    # Write output file is --output is provided.
+    if args.output:
+        with open(args.output, 'w', encoding='utf8') as file_obj:
+            for dup_file in dup_files:
+                file_obj.write(f'{os.path.normpath(dup_file)}\n')
+
+
+if __name__ == '__main__':
+    main()
