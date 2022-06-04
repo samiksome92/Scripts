@@ -13,8 +13,10 @@ import os
 import platform
 import random
 import re
+import shutil
 import socketserver
 import subprocess
+import tempfile
 from typing import Any, Dict, List
 import urllib
 import uuid
@@ -24,14 +26,12 @@ from tqdm import tqdm
 
 SUPPORTED_FORMATS = ['JPEG', 'PNG', 'GIF', 'WEBP']
 
-# System specific globals.
+# System specific browser defaults.
 SYSTEM = platform.system()
 if SYSTEM == 'Windows':
     BROWSER = ['explorer']
-    OUT_DIR = os.path.join(os.environ['LOCALAPPDATA'], 'gallery.py')
 elif SYSTEM == 'Linux':
     BROWSER = ['xdg-open']
-    OUT_DIR = os.path.join(os.environ['HOME'], '.local', 'share', 'gallery.py')
 
 
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -40,17 +40,25 @@ class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     Extends SimpleHTTPRequestHandler and adds support for gallery requests.
     """
 
+    # Override __init__ to only accept output directory.
+    def __init__(self, out_dir):
+        self.out_dir = out_dir
+
+    # Add __call__ so that SocketServer.BaseServer uses this instead of init when calling the instance.
+    def __call__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def translate_path(self, path: str) -> str:
         """Overrides translate_path to use custom path formats."""
         path = urllib.parse.unquote(path)
 
         # If root serve index.html.
         if (path == '' or path == '/'):
-            path = os.path.join(OUT_DIR, 'index.html')
+            path = os.path.join(self.out_dir, 'index.html')
 
         # If id serve thumbnail.
         elif (path.startswith('/i/')):
-            path = os.path.join(OUT_DIR, path[3:]+'.png')
+            path = os.path.join(self.out_dir, path[3:]+'.png')
 
         # If raw serve image.
         elif (path.startswith('/r/')):
@@ -164,7 +172,7 @@ def randomize_imgs(img_files: List[str]) -> List[str]:
     return img_files
 
 
-def resize_imgs(img_files: List[str], img_ids: List[str], height: int = 300) -> None:
+def resize_imgs(img_files: List[str], img_ids: List[str], out_dir: str, height: int = 300) -> None:
     """Resize images and save them in provided directory.
 
     Parameters
@@ -173,6 +181,8 @@ def resize_imgs(img_files: List[str], img_ids: List[str], height: int = 300) -> 
         List of images.
     img_ids : List[str]
         IDs of images.
+    out_dir : str
+        Output directory.
     height : int, optional
         Height to resize to. (default=300)
     """
@@ -186,17 +196,19 @@ def resize_imgs(img_files: List[str], img_ids: List[str], height: int = 300) -> 
             w, h = img.size
             nw = int(w/h*height)
             nh = height
-            img = img.resize((nw, nh), resample=Image.BICUBIC)
-            img.save(os.path.join(OUT_DIR, img_id+'.png'))
+            img = img.resize((nw, nh), resample=Image.Resampling.BICUBIC)
+            img.save(os.path.join(out_dir, img_id+'.png'))
 
 
 def write_html(
     img_files: List[str],
     img_ids: List[str],
     img_infos: Dict[str, Dict],
+    out_dir: str,
     height: int = 300,
     padding: int = 5,
     no_resize: bool = False,
+    port: int = 8000,
 ) -> None:
     """Writes out the html for the gallery.
 
@@ -216,6 +228,8 @@ def write_html(
         Padding between items. (default=5)
     no_resize : bool, optional
         Do not resize images for thumbnails if True. (default=False)
+    port : int, optional
+        Server port. (default=8000)
     """
     # HTML start.
     html = (
@@ -290,8 +304,8 @@ def write_html(
         img_url: str = urllib.parse.quote(img_file)
         info = img_infos[img_file]
 
-        raw_img_url = 'http://127.0.0.1:8000/r/'+img_url
-        id_img_url = 'http://127.0.0.1:8000/i/'+img_id
+        raw_img_url = f'http://127.0.0.1:{port}/r/'+img_url
+        id_img_url = f'http://127.0.0.1:{port}/i/'+img_id
 
         if no_resize:
             html += f'<img src="{raw_img_url}" title="{title}" class="img" id="{img_id}" data-url="{raw_img_url}" data-w="{info["w"]}" data-h="{info["h"]}">'
@@ -658,16 +672,18 @@ def write_html(
         '</html>'
     )
 
-    with open(os.path.join(OUT_DIR, 'index.html'), 'w', encoding='utf8') as file_obj:
+    with open(os.path.join(out_dir, 'index.html'), 'w', encoding='utf8') as file_obj:
         file_obj.write(html)
 
 
 def create_gallery(
     dir_path: str,
+    out_dir: str,
     randomize: bool = False,
     height: int = 300,
     padding: int = 5,
     no_resize: bool = False,
+    port: int = 8000,
 ) -> bool:
     """Given a directory scan it for images and create a gallery for the same.
 
@@ -675,6 +691,8 @@ def create_gallery(
     ----------
     dir_path : str
         Directory path.
+    out_dir : str
+        Output directory.
     randomize : bool, optional
         Randomize order of images. (default=False)
     height : int, optional
@@ -683,17 +701,14 @@ def create_gallery(
         Padding between images. (default=5)
     no_resize : bool, optional
         Do not resize images for thumbnails if True. (default=False)
+    port : int, optional
+        Server port. (default=8000)
 
     Returns
     -------
     bool
         Whether gallery was created or not.
     """
-    # Clean old files from directory.
-    old_files = os.listdir(OUT_DIR)
-    for file in old_files:
-        os.remove(os.path.join(OUT_DIR, file))
-
     # Get all images.
     img_files, img_infos = get_img_files(dir_path)
 
@@ -715,33 +730,37 @@ def create_gallery(
 
     if not no_resize:
         # Resize the images for thumbnails.
-        resize_imgs(img_files, img_ids, height)
+        resize_imgs(img_files, img_ids, out_dir, height)
 
     # Write out HTML file.
-    write_html(img_files, img_ids, img_infos, height, padding, no_resize)
+    write_html(img_files, img_ids, img_infos, out_dir, height, padding, no_resize, port)
 
     return True
 
 
-def open_gallery(browser: List[str] = BROWSER) -> None:
+def open_gallery(out_dir, port: int = 8000, browser: List[str] = BROWSER) -> None:
     """Given a path open it in the browser.
 
     Parameters
     ----------
+    out_dir : str
+        Output directory.
+    port : int, optional
+        Server port. (default=8000)
     browser : List[str]
         Command line for browser.
     """
-    subprocess.Popen(browser + ['http://127.0.0.1:8000/'])
+    subprocess.Popen(browser + [f'http://127.0.0.1:{port}/'])
 
     # Initialize server and setup socket reuse.
-    httpd = socketserver.TCPServer(('', 8000), HTTPRequestHandler, bind_and_activate=False)
+    httpd = socketserver.TCPServer(('', port), HTTPRequestHandler(out_dir), bind_and_activate=False)
     httpd.allow_reuse_address = True
 
     # Bind server.
     try:
         httpd.server_bind()
         httpd.server_activate()
-        print('Serving at port 8000...')
+        print(f'Serving at port {port}...')
     except:
         httpd.server_close()
         raise
@@ -753,7 +772,8 @@ def open_gallery(browser: List[str] = BROWSER) -> None:
         print('Shutting down server.')
         httpd.shutdown()
         httpd.server_close()
-        raise
+
+        return
 
 
 def main() -> None:
@@ -765,6 +785,7 @@ def main() -> None:
     parser.add_argument('-t', '--height', help='Height of each row in pixels', type=int, default=300)
     parser.add_argument('-p', '--padding', help='Padding between images', type=int, default=5)
     parser.add_argument('-n', '--no_resize', help='Do not resize images for thumnails.', action='store_true')
+    parser.add_argument('-o', '--port', help='Port to use for the server.', type=int, default=8000)
     parser.add_argument('-b', '--browser', help='Custom browser command (arguments supported)',
                         nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -776,15 +797,28 @@ def main() -> None:
     if args.browser is None:
         args.browser = BROWSER
 
-    # Create directories to store the html files.
-    os.makedirs(OUT_DIR, exist_ok=True)
+    # Create temporary directory to store the html files.
+    # os.makedirs(OUT_DIR, exist_ok=True)
+    out_dir = tempfile.mkdtemp()
+    print(out_dir)
 
     # Create gallery and then open it.
-    status = create_gallery(args.dir_path, args.randomize, args.height, args.padding, args.no_resize)
+    status = create_gallery(
+        args.dir_path,
+        out_dir,
+        args.randomize,
+        args.height,
+        args.padding,
+        args.no_resize,
+        args.port
+    )
     if status:
-        open_gallery(args.browser)
+        open_gallery(out_dir, args.port, args.browser)
     else:
         print('No images were found in the directory.')
+
+    # Clean up temporary directory.
+    shutil.rmtree(out_dir)
 
 
 if __name__ == '__main__':

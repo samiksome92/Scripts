@@ -139,7 +139,7 @@ The script scans a given directory for supported image files. It then generate a
 - `tqdm`
 
 ### Usage
-    gallery.py [-h] [-r] [-t HEIGHT] [-p PADDING] [-n] [-s] [-b ...] dir_path
+    gallery [-h] [-r] [-t HEIGHT] [-p PADDING] [-n] [-o PORT] [-b ...] dir_path
 
 positional arguments
 
@@ -154,6 +154,7 @@ optional arguments:
     -p PADDING, --padding PADDING
                           Padding between images
     -n, --no_resize       Do not resize images for thumnails.
+    -o PORT, --port PORT  Port to use for the server.
     -b ..., --browser ...
                           Custom browser command (arguments supported)
 
@@ -168,6 +169,8 @@ By default padding of 5px is used but can be overridden using `--padding` parame
 If `--randomize` is specified, the order of the images will be randomized (it will still try to keep multipart images, such as `img1`, `img2`, etc., together). Without `--randomize` the images are laid out in alphabetical order.
 
 By default all images are resized for thumbnails. Using `--no_resize` disables this, which means the gallery launches much faster but images may load slowly if they are large.
+
+The server uses 8000 as the default port, but it can be overridden using `--port`. Useful for launching multiple instances.
 
 Finally, a custom browser can be used via the parameter `--browser`. Arguments to said browser command can also be provided.
 
