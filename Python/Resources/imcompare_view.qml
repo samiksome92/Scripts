@@ -46,6 +46,8 @@ Page {
             backend.switch();
         else if (event.key === Qt.Key_Enter)
             backend.choose();
+        else if (event.key === Qt.Key_K)
+            backend.both();
         else if (event.key === Qt.Key_N)
             backend.next();
     }

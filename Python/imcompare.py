@@ -11,7 +11,7 @@ import argparse
 import itertools
 import os
 import sys
-from typing import List
+from typing import List, Tuple, Union
 
 import cv2
 import numpy as np
@@ -169,18 +169,22 @@ def similarity(img_1: dict, img_2: dict, resolution: int = 100) -> float:
     return score
 
 
-def start(img_pairs: List[tuple]) -> List[str]:
+def start(img_pairs: List[tuple], return_selected: bool = False) -> Union[List[str], Tuple[List[str], List[str]]]:
     """Starts the Qt GUI application for user to select images.
 
     Parameters
     ----------
     img_pairs : List[tuple]
         Image pairs for comparison.
+    return_selected : bool, optional
+        If True return selected images as well as discarded ones. (default=False)
 
     Returns
     -------
     discarded : List[str]
         List of discarded images. Only the paths are returned.
+    discarded, selected : Tuple[List[str], List[str]]
+        List of discarded images and selected images. Only returned if return_selected=True.
     """
     # Set up Qt app.
     app = QGuiApplication(sys.argv)
@@ -188,6 +192,7 @@ def start(img_pairs: List[tuple]) -> List[str]:
     view.setResizeMode(QQuickView.SizeRootObjectToView)
 
     discarded = set()
+    selected = set()
 
     class BackEnd(QObject):
         """Class for handling image update operations."""
@@ -306,8 +311,18 @@ def start(img_pairs: List[tuple]) -> List[str]:
             """Choose one of the images and load the next image pair."""
             if self.which == 'left':
                 discarded.add(self.img_right['path'])
+                selected.add(self.img_left['path'])
             elif self.which == 'right':
                 discarded.add(self.img_left['path'])
+                selected.add(self.img_right['path'])
+
+            self.next()
+
+        @Slot()
+        def both(self):
+            """Choose both images and load the next image pair."""
+            selected.add(self.img_left['path'])
+            selected.add(self.img_right['path'])
 
             self.next()
 
@@ -319,7 +334,12 @@ def start(img_pairs: List[tuple]) -> List[str]:
 
     app.exec()
 
-    return discarded
+    # Make sure no discarded files are present in selected.
+    selected = [f for f in selected if f not in discarded]
+    if return_selected:
+        return list(discarded), selected
+    else:
+        return list(discarded)
 
 
 def main() -> None:
@@ -335,6 +355,8 @@ def main() -> None:
         type=float,
         default=0.1
     )
+    parser.add_argument('-m', '--mark_selected',
+                        help='Mark selected ones as well as discarded ones', action='store_true')
     args = parser.parse_args()
 
     # Cross comparison cannot be done without two directories.
@@ -357,12 +379,18 @@ def main() -> None:
     img_pairs = sorted(img_pairs, key=lambda x: x['score'], reverse=True)
 
     # Start Qt GUI for user to select images.
-    discarded = start(img_pairs)
+    discarded, selected = start(img_pairs, True)
 
     # Append .discarded to discarded image files.
     for img_path in discarded:
         os.rename(img_path, img_path+'.discarded')
     print(f'{len(discarded)} images discarded.')
+
+    # If mark_selected is mentioned, append .selected to selected image files.
+    if args.mark_selected:
+        for img_path in selected:
+            os.rename(img_path, img_path+'.selected')
+        print(f'{len(selected)} images selected.')
 
 
 if __name__ == '__main__':
