@@ -2,8 +2,8 @@
 
 """Check for and remove duplicate files.
 
-Checks for duplicate files in given directories using hashing, followed by byte-by-byte comparison. By default it
-removes all duplicates it finds and outputs a list of deleted files. It can also be used to simply output the list of
+Checks for duplicate files in given directories using size comparison, hashing, and byte-by-byte comparison. By default
+it removes all duplicates it finds and outputs a list of deleted files. It can also be used to simply output the list of
 duplicates without deleting them.
 """
 
@@ -58,15 +58,32 @@ def find_dups(dirs: List[str]) -> List[str]:
         List of duplicates found.
     """
     dup_files: List[str] = []
-    hash2files: Dict[str, List[str]] = {}
 
-    dir_progress_bar = tqdm(dirs, bar_format='Checking directories |{bar:20}| {n_fmt}/{total_fmt}')
-    for dir in dir_progress_bar:
-        # Get list of files in directory.
-        files = sorted([os.path.join(dir, f) for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))])
+    # Get list of all files.
+    print('Getting list of files.')
+    files = []
+    for dir in dirs:
+        files += sorted([os.path.join(dir, f) for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))])
+    print(f'Found {len(files)} files across directories.')
 
-        file_progress_bar = tqdm(files, bar_format='Finding duplicates   |{bar:20}| {n_fmt}/{total_fmt}', leave=False)
-        for file in file_progress_bar:
+    # Check file sizes.
+    print('Checking file sizes.')
+    size2files: Dict[int, List[str]] = {}
+    for file in files:
+        size = os.stat(file).st_size
+        if size not in size2files:
+            size2files[size] = []
+        size2files[size].append(file)
+
+    # Find duplicates.
+    progress_bar = tqdm(total=len(files), bar_format='Finding duplicates |{bar:20}| {n_fmt}/{total_fmt}')
+    for size, files in size2files.items():
+        if len(files) == 1:  # If only 1 file is present skip it as it has no duplicate.
+            progress_bar.update(1)
+            continue
+
+        hash2files: Dict[str, List[str]] = {}
+        for file in files:
             # Compute CRC32 checksum. Since we'll do byte-by-byte comparisons if checksums match, using CRC32 is fine.
             checksum = crc32(file)
 
@@ -80,6 +97,8 @@ def find_dups(dirs: List[str]) -> List[str]:
                     hash2files[checksum].append(file)  # Did not match any file. Hash collision. Add to list.
             else:
                 hash2files[checksum] = [file]
+        progress_bar.update(len(files))
+    progress_bar.close()
 
     return dup_files
 

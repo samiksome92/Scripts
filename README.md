@@ -79,7 +79,7 @@ A simple user script to redirect mobile english wikipedia links to their desktop
 ## `dup.py`
 Check for and remove duplicate files.
 
-Checks for duplicate files in given directories using hashing, followed by byte-by-byte comparison. By default it removes all duplicates it finds and outputs a list of deleted files. It can also be used to simply output the list of duplicates without deleting them.
+Checks for duplicate files in given directories using size comparison, hashing, and byte-by-byte comparison. By default it removes all duplicates it finds and outputs a list of deleted files. It can also be used to simply output the list of duplicates without deleting them.
 
 ### Requirements
 - `tqdm`
