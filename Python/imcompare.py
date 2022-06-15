@@ -369,7 +369,7 @@ def main() -> None:
 
     # Calculate similarities.
     scores = []
-    progress_bar = tqdm(img_pairs, bar_format='Comparing images |{bar:20}| {n_fmt}/{total_fmt}')
+    progress_bar = tqdm(img_pairs, bar_format='Comparing images   |{bar:20}| {n_fmt}/{total_fmt}')
     for img1, img2 in progress_bar:
         score = similarity(img1, img2, args.resolution)
         scores.append(score)
