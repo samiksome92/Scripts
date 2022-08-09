@@ -16,6 +16,7 @@ import charset_normalizer
 
 
 def main() -> None:
+    """Main function for the script."""
     # Parse arguments.
     parser = argparse.ArgumentParser()
     parser.add_argument('txt_file', help='Text file to process')

@@ -17,7 +17,7 @@ import shutil
 import socketserver
 import subprocess
 import tempfile
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 import urllib
 import uuid
 
@@ -111,7 +111,7 @@ def get_img_info(file_path: str) -> Dict[str, Any]:
     return info
 
 
-def get_img_files(dir_path: str) -> List[str]:
+def get_img_files(dir_path: str) -> Tuple[List[str], Dict[str, Dict]]:
     """Returns a list of images under the given directory, along with their infos.
 
     Parameters

@@ -69,8 +69,10 @@ def state_check() -> Tuple[bool, requests.Response]:
 
     Returns
     -------
-    Tuple[bool, requests.Response]
-        Returns a tuple stating whether user is logged in, and the Response object.
+    bool
+        Indicates whether the user is logged in.
+    requests.Response
+        The Response object.
     """
     # Keep trying to reach http://1.1.1.1 until status code is 200.
     while True:
@@ -104,8 +106,10 @@ def login(username: str, password: str, response: requests.Response) -> Tuple[bo
 
     Returns
     -------
-    Tuple[bool, requests.Response | None]
-        Tuple with login status and response object (or None is response is not valid).
+    bool
+        Login status.
+    requests.Response | None
+        The Response object (or None is response is not valid).
     """
     global logged_in
     global logout_url

@@ -10,7 +10,7 @@ resolution they are scaled down as well. The images are optionally renamed and p
 import argparse
 import os
 from shutil import copy, move
-from typing import List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 from zipfile import ZipFile
 
 from PIL import Image
@@ -124,7 +124,7 @@ def get_scale(inv_aspect: float) -> float:
 
 
 def process_image(
-    img_file: dict,
+    img_file: Dict,
     out_file: str,
     jpeg: bool = False,
     png: bool = False,
@@ -136,7 +136,7 @@ def process_image(
 
     Parameters
     ----------
-    img_file : dict
+    img_file : Dict
         Image file.
     out_file : str
         Output file.
@@ -251,7 +251,7 @@ def merge_subdirs(dir_path: str) -> bool:
     return True
 
 
-def check_files(file_list: List[str]) -> Tuple[dict, List[Tuple[str, str]]]:
+def check_files(file_list: List[str]) -> Tuple[Dict, List[Tuple[str, str]]]:
     """Check all files and return supported image files and non-supported files.
 
     Parameters
@@ -261,7 +261,7 @@ def check_files(file_list: List[str]) -> Tuple[dict, List[Tuple[str, str]]]:
 
     Returns
     -------
-    img_files : dict
+    img_files : Dict
         Dictionary of all supported image files.
     bad_files : List[Tuple[str, str]]
         List of bad files and reasons why they are bad.

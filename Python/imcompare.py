@@ -11,7 +11,7 @@ import argparse
 import itertools
 import os
 import sys
-from typing import List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 import cv2
 import numpy as np
@@ -55,7 +55,7 @@ def filesize(size: int) -> str:
     return f'{size:.2f} {units[unit_idx]}'
 
 
-def getpairs(dir_paths: List[str], cross: bool = False, max_aspect: float = 0.1) -> List[tuple]:
+def getpairs(dir_paths: List[str], cross: bool = False, max_aspect: float = 0.1) -> List[Tuple]:
     """Given a set of directories gathers image pairs for comparison.
 
     Parameters
@@ -69,7 +69,7 @@ def getpairs(dir_paths: List[str], cross: bool = False, max_aspect: float = 0.1)
 
     Returns
     -------
-    img_pairs : List[tuple]
+    img_pairs : List[Tuple]
         Pairs of images for comparison.
     """
     # Gather all valid images.
@@ -125,14 +125,14 @@ def getpairs(dir_paths: List[str], cross: bool = False, max_aspect: float = 0.1)
     return img_pairs
 
 
-def similarity(img_1: dict, img_2: dict, resolution: int = 100) -> float:
+def similarity(img_1: Dict, img_2: Dict, resolution: int = 100) -> float:
     """Given two images measures their similarity using ssim.
 
     Parameters
     ----------
-    img_1 : dict
+    img_1 : Dict
         First image.
-    img_2 : dict
+    img_2 : Dict
         Second image.
     resolution : int, optional
         Images are resized to this resolution before comparison. (default=100)
@@ -169,7 +169,7 @@ def similarity(img_1: dict, img_2: dict, resolution: int = 100) -> float:
     return score
 
 
-def start(img_pairs: List[tuple], return_selected: bool = False) -> Union[List[str], Tuple[List[str], List[str]]]:
+def start(img_pairs: List[Tuple], return_selected: bool = False) -> Union[List[str], Tuple[List[str], List[str]]]:
     """Starts the Qt GUI application for user to select images.
 
     Parameters
@@ -183,8 +183,8 @@ def start(img_pairs: List[tuple], return_selected: bool = False) -> Union[List[s
     -------
     discarded : List[str]
         List of discarded images. Only the paths are returned.
-    discarded, selected : Tuple[List[str], List[str]]
-        List of discarded images and selected images. Only returned if return_selected=True.
+    selected : List[str]
+        List of selected images. Only returned if return_selected=True.
     """
     # Set up Qt app.
     app = QGuiApplication(sys.argv)
