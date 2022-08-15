@@ -10,9 +10,10 @@ duplicates without deleting them.
 import argparse
 import filecmp
 import os
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import zlib
 
+from tabulate import tabulate
 from tqdm import tqdm
 
 
@@ -44,7 +45,7 @@ def crc32(file: str, chunk_size: int = 65536) -> str:
     return checksum
 
 
-def find_dups(dirs: List[str]) -> List[str]:
+def find_dups(dirs: List[str]) -> List[Tuple[str, str]]:
     """Check for duplicate files.
 
     Parameters
@@ -54,7 +55,7 @@ def find_dups(dirs: List[str]) -> List[str]:
 
     Returns
     -------
-    dup_files : List[str]
+    dup_files : List[Tuple[str, str]]
         List of duplicates found.
     """
     dup_files: List[str] = []
@@ -91,7 +92,7 @@ def find_dups(dirs: List[str]) -> List[str]:
             if checksum in hash2files:
                 for oldfile in hash2files[checksum]:
                     if filecmp.cmp(oldfile, file, shallow=False):
-                        dup_files.append(file)
+                        dup_files.append((file, oldfile))
                         break
                 else:
                     hash2files[checksum].append(file)  # Did not match any file. Hash collision. Add to list.
@@ -122,20 +123,21 @@ def main() -> None:
     # If --find is not given delete the duplicates.
     if not args.find:
         print('Removing duplicates ...')
-        for dup_file in dup_files:
-            print(f'\t{os.path.normpath(dup_file)}')
+        print(tabulate([(os.path.normpath(a), os.path.normpath(b))
+              for a, b in dup_files], headers=['Duplicate File', 'Matched To']))
+        for dup_file, _ in dup_files:
             os.remove(dup_file)
         print(f'Removed {len(dup_files)} duplicates.')
     else:
         print(f'Found {len(dup_files)} duplicates ...')
-        for dup_file in dup_files:
-            print(f'\t{os.path.normpath(dup_file)}')
+        print(tabulate([(os.path.normpath(a), os.path.normpath(b))
+              for a, b in dup_files], headers=['Duplicate File', 'Matched To']))
 
     # Write output file is --output is provided.
     if args.output:
         with open(args.output, 'w', encoding='utf8') as file_obj:
-            for dup_file in dup_files:
-                file_obj.write(f'{os.path.normpath(dup_file)}\n')
+            for dup_file, old_file in dup_files:
+                file_obj.write(f'{os.path.normpath(dup_file)}\t{os.path.normpath(old_file)}\n')
 
 
 if __name__ == '__main__':
