@@ -258,7 +258,6 @@ def write_html(
         '}'
         '.img {'
         f'  height: {height}px;'
-        '   flex-grow: 1;'
         '   object-fit: cover;'
         '   box-sizing: border-box;'
         '}'
@@ -308,9 +307,9 @@ def write_html(
         id_img_url = f'http://127.0.0.1:{port}/i/'+img_id
 
         if no_resize:
-            html += f'<img src="{raw_img_url}" title="{title}" class="img" id="{img_id}" data-url="{raw_img_url}" data-w="{info["w"]}" data-h="{info["h"]}">'
+            html += f'<img src="{raw_img_url}" title="{title}" class="img" id="{img_id}" data-url="{raw_img_url}" data-w="{info["w"]}" data-h="{info["h"]}" style="flex-grow: {info["w"]/info["h"] * height};">'
         else:
-            html += f'<img src="{id_img_url}" title="{title}" class="img" id="{img_id}" data-url="{raw_img_url}" data-w="{info["w"]}" data-h="{info["h"]}">'
+            html += f'<img src="{id_img_url}" title="{title}" class="img" id="{img_id}" data-url="{raw_img_url}" data-w="{info["w"]}" data-h="{info["h"]}" style="flex-grow: {info["w"]/info["h"] * height};">'
     html += '<div style="flex-grow: 1e10;"></div></div>'
 
     # Image viewer.
