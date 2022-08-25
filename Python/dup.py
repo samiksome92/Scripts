@@ -45,13 +45,15 @@ def crc32(file: str, chunk_size: int = 65536) -> str:
     return checksum
 
 
-def find_dups(dirs: List[str]) -> List[Tuple[str, str]]:
+def find_dups(dirs: List[str], no_hash: bool = False) -> List[Tuple[str, str]]:
     """Check for duplicate files.
 
     Parameters
     ----------
     dirs : List[str]
         Directories to search.
+    no_hash : bool, optional
+        Don't use hashing. (default=False)
 
     Returns
     -------
@@ -83,21 +85,33 @@ def find_dups(dirs: List[str]) -> List[Tuple[str, str]]:
             progress_bar.update(1)
             continue
 
-        hash2files: Dict[str, List[str]] = {}
-        for file in files:
-            # Compute CRC32 checksum. Since we'll do byte-by-byte comparisons if checksums match, using CRC32 is fine.
-            checksum = crc32(file)
-
-            # If checksum is already present compare against earlier files and see if it matches any.
-            if checksum in hash2files:
-                for oldfile in hash2files[checksum]:
+        if no_hash:
+            # If not computing hashes, we can directly start comparing files byte by byte.
+            unique_files = [files[0]]
+            for file in files[1:]:
+                for oldfile in unique_files:
                     if filecmp.cmp(oldfile, file, shallow=False):
                         dup_files.append((file, oldfile))
                         break
                 else:
-                    hash2files[checksum].append(file)  # Did not match any file. Hash collision. Add to list.
-            else:
-                hash2files[checksum] = [file]
+                    unique_files.append(file)
+        else:
+            # First compute hashes and only compare byte by byte if checksum matches.
+            hash2files: Dict[str, List[str]] = {}
+            for file in files:
+                # Compute CRC32 checksum. Since we'll do byte-by-byte comparisons if checksums match, using CRC32 is fine.
+                checksum = crc32(file)
+
+                # If checksum is already present compare against earlier files and see if it matches any.
+                if checksum in hash2files:
+                    for oldfile in hash2files[checksum]:
+                        if filecmp.cmp(oldfile, file, shallow=False):
+                            dup_files.append((file, oldfile))
+                            break
+                    else:
+                        hash2files[checksum].append(file)  # Did not match any file. Hash collision. Add to list.
+                else:
+                    hash2files[checksum] = [file]
         progress_bar.update(len(files))
     progress_bar.close()
 
@@ -110,11 +124,12 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('dirs', help='Directories to search', nargs='+')
     parser.add_argument('-f', '--find', help="Only find duplicates. Don't delete them", action='store_true')
+    parser.add_argument('-n', '--no_hash', help="Don't use any hashing", action='store_true')
     parser.add_argument('-o', '--output', help='Output file with list of duplicates', default=None)
     args = parser.parse_args()
 
     # Get duplicates.
-    dup_files = find_dups(args.dirs)
+    dup_files = find_dups(args.dirs, args.no_hash)
 
     if len(dup_files) == 0:
         print('No duplicates found.')
