@@ -68,10 +68,13 @@ def find_dups(dirs: List[str], recursive: bool = False, no_hash: bool = False) -
     print('Getting list of files.')
     files = []
     for dir_ in dirs:
-        dir_files = []
-        for r, _, fs in os.walk(dir_):
-            dir_files += [os.path.join(r, f) for f in fs]
-        files += sorted(dir_files)
+        if recursive:
+            dir_files = []
+            for r, _, fs in os.walk(dir_):
+                dir_files += [os.path.join(r, f) for f in fs]
+            files += sorted(dir_files)
+        else:
+            files += sorted([os.path.join(dir, f) for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))])
     print(f'Found {len(files)} files across directories.')
 
     # Check file sizes.
