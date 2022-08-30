@@ -45,13 +45,15 @@ def crc32(file: str, chunk_size: int = 65536) -> str:
     return checksum
 
 
-def find_dups(dirs: List[str], no_hash: bool = False) -> List[Tuple[str, str]]:
+def find_dups(dirs: List[str], recursive: bool = False, no_hash: bool = False) -> List[Tuple[str, str]]:
     """Check for duplicate files.
 
     Parameters
     ----------
     dirs : List[str]
         Directories to search.
+    recursive : bool, optional
+        Search directories recursively. (default=False)
     no_hash : bool, optional
         Don't use hashing. (default=False)
 
@@ -65,8 +67,11 @@ def find_dups(dirs: List[str], no_hash: bool = False) -> List[Tuple[str, str]]:
     # Get list of all files.
     print('Getting list of files.')
     files = []
-    for dir in dirs:
-        files += sorted([os.path.join(dir, f) for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))])
+    for dir_ in dirs:
+        dir_files = []
+        for r, _, fs in os.walk(dir_):
+            dir_files += [os.path.join(r, f) for f in fs]
+        files += sorted(dir_files)
     print(f'Found {len(files)} files across directories.')
 
     # Check file sizes.
@@ -123,13 +128,14 @@ def main() -> None:
     # Parse arguments.
     parser = argparse.ArgumentParser()
     parser.add_argument('dirs', help='Directories to search', nargs='+')
+    parser.add_argument('-r', '--recursive', help='Search directories recursively', action='store_true')
     parser.add_argument('-f', '--find', help="Only find duplicates. Don't delete them", action='store_true')
     parser.add_argument('-n', '--no_hash', help="Don't use any hashing", action='store_true')
     parser.add_argument('-o', '--output', help='Output file with list of duplicates', default=None)
     args = parser.parse_args()
 
     # Get duplicates.
-    dup_files = find_dups(args.dirs, args.no_hash)
+    dup_files = find_dups(args.dirs, args.recursive, args.no_hash)
 
     if len(dup_files) == 0:
         print('No duplicates found.')

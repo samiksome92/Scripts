@@ -85,7 +85,7 @@ Checks for duplicate files in given directories using size comparison, hashing, 
 - `tqdm`
 
 ### Usage
-    dup.py [-h] [-f] [-o OUTPUT] dirs [dirs ...]
+    dup [-h] [-r] [-f] [-n] [-o OUTPUT] dirs [dirs ...]
 
 positional arguments:
 
@@ -94,11 +94,13 @@ positional arguments:
 optional arguments:
 
     -h, --help            show this help message and exit
+    -r, --recursive       Search directories recursively
     -f, --find            Only find duplicates. Don't delete them
+    -n, --no_hash         Don't use any hashing
     -o OUTPUT, --output OUTPUT
                           Output file with list of duplicates
 
-If `--find` is not specified the duplicate files will be deleted. Unless `--output` is specified no output file will be written (The list of files will still be displayed on the terminal).
+If `--find` is not specified the duplicate files will be deleted. `--recursive` will search directories recursively to find files. Specify `--no_hash` to skip hashing and directly compare files. Unless `--output` is specified no output file will be written (The list of files will still be displayed on the terminal).
 
 ---
 
