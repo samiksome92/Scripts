@@ -8,7 +8,6 @@ This is simply a collection of scripts to make my life easier.
 ## JavaScript Scripts
 - [`desktopWikipedia.js`](#desktopWikipediajs)
 - [`nyaaMagnet.js`](#nyaaMagnetjs)
-- [`oldReddit.js`](#oldRedditjs)
 - [`twitterImage.js`](#twitterImagejs)
 
 ## PowerShell Scripts
@@ -305,13 +304,6 @@ A script implementing a simple http server with custom cache control headers. Us
 This script adds an extra button beside the search button in [nyaa.si](https://nyaa.si), which collects the magnet links for all of the torrents listed in the current page/screen and copies them to the clipboard.
 
 Primary use is searching for torrents of a series and grabbing all magnet links (say for all episodes) in one go.
-
----
-
-## `oldReddit.js`
-A simple user script variant of the Old Reddit Redirect extension by Tom Watson ([GitHub](https://github.com/tom-james-watson/old-reddit-redirect)).
-
-This was created so that if one is already using a user script manager extension (Greasemonkey, Tampermonkey, Violentmonkey, etc.), then they don't need another extension simply for old reddit redirection.
 
 ---
 
