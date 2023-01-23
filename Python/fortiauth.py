@@ -144,15 +144,21 @@ def login(username: str, password: str, response: requests.Response) -> Tuple[bo
     if response.status_code != 200:
         return False, response
 
-    # If 'keepalive' is not in response url, then something went wrong. Likely invalid username/password.
-    if 'keepalive' not in response.url:
+    # We should get a javascript redirect else username/password is probably wrong.
+    url = re.search(r'window.location="(.*)"', response.text)
+    if url is None:
         logging.error('Invalid username/password. Exiting.')
         exit()
+    url = url[1]
+    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+    if response.status_code != 200:
+        logging.error('Failed to fetch keepalive webpage.')
+        return False, response
 
-    logging.info(f'Successfully logged in. Keepalive url: {response.url}')
+    logging.info(f'Successfully logged in. Keepalive url: {url}')
 
     logged_in = True
-    logout_url = response.url.replace('keepalive', 'logout')
+    logout_url = url.replace('keepalive', 'logout')
 
     return True, response
 
@@ -230,8 +236,15 @@ def main() -> None:
             time.sleep(args.retry_time)
             continue
 
-        # If not logged in, try to log in.
-        logging.info(f'Not logged in. Captive portal url: {response.url}')
+        # If not logged in, try to log in. Redirection is handled via javascript, so extract the redirected url.
+        url = re.search(r'window.location="(.*)"', response.text)[1]
+
+        logging.info(f'Not logged in. Captive portal url: {url}')
+
+        response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+        if response.status_code != 200:
+            logging.error('Failed to fetch captive portal webpage. Retrying...')
+            continue
         status, response = login(username, password, response)
 
         # If log in was unsuccessful retry loop.
