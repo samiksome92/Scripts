@@ -255,43 +255,28 @@ The discarded images are then renamed in place and `.discarded` is appended to t
 ## `makecbz.py`
 This script takes a directory as input and produces a CBZ file as output.
 
-Given a directory with images, it first checks all images for supported formats and possible corrupted images. Once checked all images are converted to JPEG format with specified quality factor, if they are larger than specified resolution they are scaled down as well. The images are optionally renamed and packed into a zip file.
+Given a directory with images, it first checks all images for supported formats and possible corruption. The images are then renamed (optionally) and packed into a zip/cbz file. If specified the original image files and directory are deleted.
 
 ### Requirements
 - `pillow`
-- `tqdm`
+- `rich`
 
 ### Usage
-    makecbz.py [-h] [-r RESOLUTION] [-j] [-p] [-q QUALITY] [-n] [-d] dir_paths [dir_paths ...]
+    makecbz.py [-h] [-n] [-d] dirs [dirs ...]
 
 positional arguments:
 
-    dir_paths             Directory/directories containing the images
+    dirs             Directory(s) containing the images
 
 optional arguments:
 
-    -h, --help            show this help message and exit
-    -r RESOLUTION, --resolution RESOLUTION
-                          Maximum horizontal resolution
-    -j, --jpeg            Convert all image files to JPEG
-    -p, --png             Convert all image files to PNG
-    -q QUALITY, --quality QUALITY
-                          Quality parameter for JPEG (0-100) or compression level for PNG (0-9)
-    -m, --merge_dirs      Merge images in subfolders
-    -n, --no_rename       Don't rename files
-    -d, --delete          Delete original files
+    -h, --help       show this help message and exit
+    -n, --no_rename  Don't rename files
+    -d, --delete     Delete original files
 
-Supply a directory or a list of directories (of images) to convert them into CBZ files. If there are non-image files, non-supported formats or corrupted images then a list of such files is printed out.
+Supply a directory or a list of directories (of images) to convert them into CBZ files. If there are non-image files, non-supported formats or corrupted images then a list of such files is printed out. Certain file names (hardcoded) are excluded from such a check.
 
-The images are scaled according to their aspect ratios and the specified `--resolution`. The standard aspect ratio is considered to be 2/3. Images with smaller aspect ratios (taller) are scaled to some multiple of `--resolution` in steps of `0.25 * --resolution`. If no resolution is specified the images are not scaled.
-
-If `--jpeg` is speicified all images are converted to JPEG. Similarly if `--png` is specified all images are converted to PNG. If none is specified images are kept in their source format.
-
-`--quality` specifies the JPEG compression quality or PNG compression level for `pillow`. It must be an integer between 0 and 100 for JPEG and 0-9 for PNG.
-
-If `--merge_dirs` is specified images in sub-directories are moved to the parent directory while appending the sub-directory's name before it. Useful if the comic contains logical parts which should have a common prefix (Should generally be used along with `--no-rename` to keep said prefixes).
-
-`--no-rename` if specified keeps the original file names of the images, otherwise they are renamed as `01.jpg`, `02.jpg`, `03.jpg`, ... (the numbers are padded with as many zeros as required). `--delete` if specified deletes the original image files as well as the directory.
+If `--no-rename` is specified the original file names of the images are kept, otherwise they are renamed as `01.jpg`, `02.jpg`, `03.jpg`, ... (the numbers are padded with as many zeros as required, with a minimum of 2 digits). `--delete` if specified deletes the original image files as well as the directory.
 
 ---
 
