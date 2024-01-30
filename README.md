@@ -19,7 +19,6 @@ This is simply a collection of scripts to make my life easier.
 - [`fortiauth.py`](#fortiauthpy)
 - [`gallery.py`](#gallerypy)
 - [`gif2mkv.py`](#gif2mkvpy)
-- [`imcompare.py`](#imcomparepy)
 - [`makecbz.py`](#makecbzpy)
 - [`nocache.http.server.py`](#nocachehttpserverpy)
 - [`passgen.py`](#passgenpy)
@@ -205,50 +204,6 @@ optional arguments:
 Directly converting from gif to H.265 encoded mkv using ffmpeg causes certain issues such as dropping the last frame delay. This script tries to rectify that.
 
 The script extracts frames from gif using imagemagick and composes them onto a solid background color. It then checks whether the gif has a constant or variable fps and proceeds accordingly. For constant fps the encoding is straight forward and uses only `ffmpeg`. However, for variable fps `ffmpeg`'s `concat` demuxer does not always produce proper timings (based on our experiments). As such, we first encode using `ffmpeg` at a constant fps followed by setting timecodes explicitly using `mkvmerge`. The last frame is also duplicated in both cases so that it is shown properly.
-
----
-
-## `imcompare.py`
-Takes a list of directories as input and allows comparing images in them for possible duplicates.
-
-Given a list of directories, the script scans them for images. Next it compares similarities between pairs of images using SSIM algorithm. Once the similarities have been computed a Qt GUI is started so that users can manually look at pairs of images and select which ones to keep. The discarded images are renamed with a .discarded extension.
-
-### Requirements
-- `opencv-python`
-- `pillow`
-- `pyside6`
-- `scikit-image`
-- `tqdm`
-
-### Usage
-    usage: imcompare.py [-h] [-x] [-r RESOLUTION] [-a MAX_ASPECT] [-m] dirs [dirs ...]
-
-positional arguments:
-
-    dirs                  Image directories
-
-optional arguments:
-
-    -h, --help            show this help message and exit
-    -x, --cross           Compare across directories, not within them
-    -r RESOLUTION, --resolution RESOLUTION
-                          Resolution at which the SSIM is computed
-    -a MAX_ASPECT, --max_aspect MAX_ASPECT
-                          If difference between aspect ratios are higher than this, images are not considered for
-                          comparison
-    -m, --mark_selected   Mark selected ones as well as discarded ones
-
-Supply a list of directories with images to compare them visually, primarily used for filtering out same images saved with varying quality and formats.
-
-By default the images found in all directories are considered together and all possible pairs are looked at. If `--cross` is specified images in the same directory are not compared with each other. As such `--cross` needs at least two directories to work.
-
-The similarities between images are calculate using structured similarity index (SSIM). Since evaluating SSIM over high resolution images is very costly, images are resized to fit a box whose size can be specified using `--resolution`. By default it is 100 x 100. To prune out further unlikely pairs if the difference in aspect ratio of two images is larger than `--max_aspect` they are not considered (default value is 0.1).
-
-Once similarities have been computed a GUI is started which shows image pairs in descending order of similarity so that the user can choose which ones to keep. Space cycles between the two images being compared, Enter keeps the image currently being shown and discards the other, K selects both images, N loads the next image pair without discarding either. The process can be stopped any time by simply closing the window.
-
-The discarded images are then renamed in place and `.discarded` is appended to their file names making it their extension. If `--mark_selected` is specified, then selected images are also renamed with a `.selected` suffix.
-
-**NOTE**: Requires `Resources/imcompare_view.qml` file to be present.
 
 ---
 
