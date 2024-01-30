@@ -15,7 +15,6 @@ This is simply a collection of scripts to make my life easier.
 
 ## Python Scripts
 - [`crop.py`](#croppy)
-- [`dup.py`](#duppy)
 - [`fortiauth.py`](#fortiauthpy)
 - [`gallery.py`](#gallerypy)
 - [`gif2mkv.py`](#gif2mkvpy)
@@ -71,34 +70,6 @@ It works well if the actual region of interest has the most edges, otherwise it 
 
 ## `desktopWikipedia.js`
 A simple user script to redirect mobile english wikipedia links to their desktop versions. The script replaces `*.m.wikipedia.org` with `*.wikipedia.org` in url to achieve this.
-
----
-
-## `dup.py`
-Check for and remove duplicate files.
-
-Checks for duplicate files in given directories using size comparison, hashing, and byte-by-byte comparison. By default it removes all duplicates it finds and outputs a list of deleted files. It can also be used to simply output the list of duplicates without deleting them.
-
-### Requirements
-- `tqdm`
-
-### Usage
-    dup [-h] [-r] [-f] [-n] [-o OUTPUT] dirs [dirs ...]
-
-positional arguments:
-
-    dirs                  Directories to search
-
-optional arguments:
-
-    -h, --help            show this help message and exit
-    -r, --recursive       Search directories recursively
-    -f, --find            Only find duplicates. Don't delete them
-    -n, --no_hash         Don't use any hashing
-    -o OUTPUT, --output OUTPUT
-                          Output file with list of duplicates
-
-If `--find` is not specified the duplicate files will be deleted. `--recursive` will search directories recursively to find files. Specify `--no_hash` to skip hashing and directly compare files. Unless `--output` is specified no output file will be written (The list of files will still be displayed on the terminal).
 
 ---
 
