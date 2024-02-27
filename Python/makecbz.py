@@ -85,7 +85,7 @@ def make_cbz(dir: Path, no_rename: bool = False, delete: bool = False) -> None:
         Delete original files and directory if True. (default=False)
     """
     # Check if output file is already present.
-    out_file = dir.with_suffix('.cbz')
+    out_file = dir.parent / (dir.name + '.cbz')
     if out_file.exists():
         RICH_CONSOLE.print(
             f"[bright_yellow]WARNING:[/bright_yellow] Output file already exists. Overwrite? {rich.markup.escape('[y/N]')} ", end='')
