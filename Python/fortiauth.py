@@ -17,7 +17,7 @@ from typing import Tuple, Union
 
 # URL constants.
 ONE_ONE_ONE_ONE = 'http://1.1.1.1/'
-ONE_ONE_ONE_ONE_HTTPS = 'https://1.1.1.1/'
+ONE_ONE_ONE_ONE_HTTPS = ['https://1.1.1.1/', 'https://one.one.one.one/']
 
 # Using globals here help bypass passing a few arguments.
 logged_in = False
@@ -86,7 +86,7 @@ def state_check() -> Tuple[bool, requests.Response]:
             break
 
     # If redirected url is https://1.1.1.1/ then user is probably logged in.
-    if response.url == ONE_ONE_ONE_ONE_HTTPS:
+    if response.url in ONE_ONE_ONE_ONE_HTTPS:
         return True, response
     else:
         return False, response
