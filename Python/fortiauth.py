@@ -10,32 +10,33 @@ import argparse
 import getpass
 import logging
 import re
-import requests
 import signal
 import time
 from typing import Tuple, Union
 
+import requests
+
 # URL constants.
-ONE_ONE_ONE_ONE = 'http://1.1.1.1/'
-ONE_ONE_ONE_ONE_HTTPS = ['https://1.1.1.1/', 'https://one.one.one.one/']
+ONE_ONE_ONE_ONE = "http://1.1.1.1/"
+ONE_ONE_ONE_ONE_HTTPS = ["https://1.1.1.1/", "https://one.one.one.one/"]
 
 # Using globals here help bypass passing a few arguments.
 logged_in = False
-logout_url = ''
+logout_url = ""
 
 
 def interrupt_handler(sig, frame):
     """SIGINT handler. Logout user if they are logged in."""
     if logged_in:
         try:
-            response = requests.get(logout_url, headers={'User-Agent': 'Mozilla/5.0'})
+            response = requests.get(logout_url, headers={"User-Agent": "Mozilla/5.0"})
         except:
-            logging.error(f'Error in opening url: {logout_url}.')
+            logging.error(f"Error in opening url: {logout_url}.")
 
         if response.status_code == 200:
-            logging.info('Successfully logged out.')
+            logging.info("Successfully logged out.")
     else:
-        logging.info('Exiting.')
+        logging.info("Exiting.")
 
     exit()
 
@@ -58,8 +59,8 @@ def get_credentials(pass_only: bool) -> Tuple[Union[str, None], str]:
     # Get username/password.
     username = None
     if not pass_only:
-        username = input('Username: ')
-    password = getpass.getpass('Password: ')
+        username = input("Username: ")
+    password = getpass.getpass("Password: ")
 
     return username, password
 
@@ -77,9 +78,9 @@ def state_check() -> Tuple[bool, requests.Response]:
     # Keep trying to reach http://1.1.1.1 until status code is 200.
     while True:
         try:
-            response = requests.get(ONE_ONE_ONE_ONE, headers={'User-Agent': 'Mozilla/5.0'})
+            response = requests.get(ONE_ONE_ONE_ONE, headers={"User-Agent": "Mozilla/5.0"})
         except requests.exceptions.RequestException:
-            logging.error(f'Error in opening url: {ONE_ONE_ONE_ONE}. Retrying ...')
+            logging.error(f"Error in opening url: {ONE_ONE_ONE_ONE}. Retrying ...")
             continue
 
         if response.status_code == 200:
@@ -115,30 +116,25 @@ def login(username: str, password: str, response: requests.Response) -> Tuple[bo
     global logout_url
 
     # Extract base url and magic token.
-    url = re.search('https://[a-z:0-9.]*/', response.url)
+    url = re.search("https://[a-z:0-9.]*/", response.url)
     if url is None:
-        logging.error('Could not find base url via regex match. Exiting.')
+        logging.error("Could not find base url via regex match. Exiting.")
         exit()
     url = url[0]
     magic: str = re.search('(name="magic" value=")([a-zA-Z0-9]+)(")', response.text)
     if magic is None:
-        logging.error('Could not find magic value via regex match. Exiting.')
+        logging.error("Could not find magic value via regex match. Exiting.")
         exit()
     magic = magic[2]
 
     # Prepare data.
-    data = {
-        'username': username,
-        'password': password,
-        'magic': magic,
-        '4Tredir': '/'
-    }
+    data = {"username": username, "password": password, "magic": magic, "4Tredir": "/"}
 
     # Try to log in to the network.
     try:
-        response = requests.post(url, headers={'User-Agent': 'Mozilla/5.0'}, data=data)
+        response = requests.post(url, headers={"User-Agent": "Mozilla/5.0"}, data=data)
     except requests.exceptions.RequestException:
-        logging.error(f'Error in opening url: {url}.')
+        logging.error(f"Error in opening url: {url}.")
         return False, None
 
     if response.status_code != 200:
@@ -147,18 +143,18 @@ def login(username: str, password: str, response: requests.Response) -> Tuple[bo
     # We should get a javascript redirect else username/password is probably wrong.
     url = re.search(r'window.location="(.*)"', response.text)
     if url is None:
-        logging.error('Invalid username/password. Exiting.')
+        logging.error("Invalid username/password. Exiting.")
         exit()
     url = url[1]
-    response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+    response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
     if response.status_code != 200:
-        logging.error('Failed to fetch keepalive webpage.')
+        logging.error("Failed to fetch keepalive webpage.")
         return False, response
 
-    logging.info(f'Successfully logged in. Keepalive url: {url}')
+    logging.info(f"Successfully logged in. Keepalive url: {url}")
 
     logged_in = True
-    logout_url = url.replace('keepalive', 'logout')
+    logout_url = url.replace("keepalive", "logout")
 
     return True, response
 
@@ -178,20 +174,20 @@ def keepalive(url: str, keepalive_time: int) -> None:
     # Keep sending keepalive requests every KEEPALIVE_TIME seconds.
     while True:
         try:
-            response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+            response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
         except requests.exceptions.RequestException:
-            logging.error(f'Error in opening url: {url}.')
+            logging.error(f"Error in opening url: {url}.")
             logged_in = False
             break
 
         # Ensure that no redirect occurs.
         if response.status_code == 200 and response.url == url:
-            logging.info(f'Keeping alive ({keepalive_time} secs) ...')
+            logging.info(f"Keeping alive ({keepalive_time} secs) ...")
             time.sleep(keepalive_time)
             continue
 
         else:
-            logging.error('Something went wrong.')
+            logging.error("Something went wrong.")
             logged_in = False
             break
 
@@ -200,17 +196,17 @@ def main() -> None:
     """Main function for the script."""
     # Parse arguments.
     parser = argparse.ArgumentParser()
-    parser.add_argument('-u', '--username', help='Username', default=None)
-    parser.add_argument('-p', '--password', help='Password', default=None)
-    parser.add_argument('-r', '--retry_time', help='Seconds to wait before retrying', type=int, default=30)
-    parser.add_argument('-k', '--keepalive_time', help='Seconds to wait between keepalives', type=int, default=60)
+    parser.add_argument("-u", "--username", help="Username", default=None)
+    parser.add_argument("-p", "--password", help="Password", default=None)
+    parser.add_argument("-r", "--retry_time", help="Seconds to wait before retrying", type=int, default=30)
+    parser.add_argument("-k", "--keepalive_time", help="Seconds to wait between keepalives", type=int, default=60)
     args = parser.parse_args()
 
     # Get credentials if needed.
     if args.username is None and args.password is None:
         username, password = get_credentials(False)
     elif args.username is None and args.password is not None:
-        print('Please supply a username.')
+        print("Please supply a username.")
         exit()
     elif args.username is not None and args.password is None:
         username: str = args.username
@@ -220,30 +216,30 @@ def main() -> None:
         password: str = args.password
 
     # Setup logging.
-    logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO)
+    logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s", level=logging.INFO)
 
     # Setup interrupt handler.
     signal.signal(signal.SIGINT, interrupt_handler)
 
     # Keep running a loop which checks current state, logs in and keeps alive.
     while True:
-        logging.info('Checking state ...')
+        logging.info("Checking state ...")
         status, response = state_check()
 
         # If already logged in, wait for a while and retry.
         if status:
-            logging.info(f'Seems to be already logged in. Sleeping for {args.retry_time} seconds.')
+            logging.info(f"Seems to be already logged in. Sleeping for {args.retry_time} seconds.")
             time.sleep(args.retry_time)
             continue
 
         # If not logged in, try to log in. Redirection is handled via javascript, so extract the redirected url.
         url = re.search(r'window.location="(.*)"', response.text)[1]
 
-        logging.info(f'Not logged in. Captive portal url: {url}')
+        logging.info(f"Not logged in. Captive portal url: {url}")
 
-        response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
         if response.status_code != 200:
-            logging.error('Failed to fetch captive portal webpage. Retrying...')
+            logging.error("Failed to fetch captive portal webpage. Retrying...")
             continue
         status, response = login(username, password, response)
 
@@ -255,5 +251,5 @@ def main() -> None:
         keepalive(response.url, args.keepalive_time)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -15,8 +15,8 @@ class NoCacheHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def send_response_only(self, code: int, message: Union[str, None] = None) -> None:
         """Add Cache-Control headers and Expires header."""
         super().send_response_only(code, message=message)
-        self.send_header('Cache-Control', 'no-store, must-revalidate')
-        self.send_header('Expires', '0')
+        self.send_header("Cache-Control", "no-store, must-revalidate")
+        self.send_header("Expires", "0")
 
 
 def main() -> None:
@@ -24,5 +24,5 @@ def main() -> None:
     http.server.test(HandlerClass=NoCacheHTTPRequestHandler, bind="127.0.0.1", port=8000)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

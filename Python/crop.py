@@ -41,17 +41,21 @@ def gradient_crop(img: np.ndarray, crop_size: Tuple[int, int]) -> np.ndarray:
     max_sum = -1
     max_i = 0
     max_j = 0
-    for i in range(1, integral.shape[0]-crop_height+1):
-        for j in range(1, integral.shape[1]-crop_width+1):
-            crop_sum = integral[i+crop_height-1, j+crop_width-1] - integral[i-1, j+crop_width-1] - \
-                integral[i+crop_height-1, j-1] + integral[i-1, j-1]
+    for i in range(1, integral.shape[0] - crop_height + 1):
+        for j in range(1, integral.shape[1] - crop_width + 1):
+            crop_sum = (
+                integral[i + crop_height - 1, j + crop_width - 1]
+                - integral[i - 1, j + crop_width - 1]
+                - integral[i + crop_height - 1, j - 1]
+                + integral[i - 1, j - 1]
+            )
             if crop_sum > max_sum:
                 max_sum = crop_sum
-                max_i = i-1
-                max_j = j-1
+                max_i = i - 1
+                max_j = j - 1
 
     # Return cropped image.
-    return img[max_i:max_i+crop_height, max_j:max_j+crop_width]
+    return img[max_i : max_i + crop_height, max_j : max_j + crop_width]
 
 
 def crop(img_path: str, crop_size: Tuple[int, int], fit: bool = False, out_file: str = None) -> None:
@@ -72,12 +76,12 @@ def crop(img_path: str, crop_size: Tuple[int, int], fit: bool = False, out_file:
 
     crop_width, crop_height = crop_size
 
-    with Image.open(img_path, 'r') as img:
+    with Image.open(img_path, "r") as img:
         width, height = img.size
 
         # Validate crop size.
         if crop_width > width or crop_height > height:
-            print('Crop size must be smaller than image.')
+            print("Crop size must be smaller than image.")
             return
 
         # Resize if fit is True.
@@ -93,37 +97,39 @@ def crop(img_path: str, crop_size: Tuple[int, int], fit: bool = False, out_file:
                 new_height = int(1.0 / aspect_ratio * crop_width)
 
             img = img.resize((new_width, new_height), resample=Image.LANCZOS)
-            img.save(os.path.join(os.path.dirname(img_path), os.path.basename(img_path)+'.tmp'), format='PNG')
+            img.save(os.path.join(os.path.dirname(img_path), os.path.basename(img_path) + ".tmp"), format="PNG")
         else:
-            copy(img_path, os.path.join(os.path.dirname(img_path), os.path.basename(img_path)+'.tmp'))
+            copy(img_path, os.path.join(os.path.dirname(img_path), os.path.basename(img_path) + ".tmp"))
 
     # Open image using OpenCV and crop it.
-    img = cv.imread(os.path.join(os.path.dirname(img_path), os.path.basename(img_path)+'.tmp'), cv.IMREAD_COLOR)
+    img = cv.imread(os.path.join(os.path.dirname(img_path), os.path.basename(img_path) + ".tmp"), cv.IMREAD_COLOR)
     cropped_img = gradient_crop(img, crop_size)
 
     # Write output image
     if out_file is None:
-        cv.imwrite(os.path.join(os.path.dirname(img_path), os.path.splitext(os.path.basename(img_path))
-                                [0]+'_cropped.png'), cropped_img)
+        cv.imwrite(
+            os.path.join(os.path.dirname(img_path), os.path.splitext(os.path.basename(img_path))[0] + "_cropped.png"),
+            cropped_img,
+        )
     else:
         cv.imwrite(out_file, cropped_img)
 
     # Clean up
-    os.remove(os.path.join(os.path.dirname(img_path), os.path.basename(img_path)+'.tmp'))
+    os.remove(os.path.join(os.path.dirname(img_path), os.path.basename(img_path) + ".tmp"))
 
 
 def main() -> None:
     """Main function for the script."""
     parser = argparse.ArgumentParser()
-    parser.add_argument('img_path', help='Image to crop')
-    parser.add_argument('crop_size', help='Crop size as WxH')
-    parser.add_argument('-f', '--fit', help='Resize image to fit one crop dimension', action='store_true')
-    parser.add_argument('-o', '--out_file', help='Output file')
+    parser.add_argument("img_path", help="Image to crop")
+    parser.add_argument("crop_size", help="Crop size as WxH")
+    parser.add_argument("-f", "--fit", help="Resize image to fit one crop dimension", action="store_true")
+    parser.add_argument("-o", "--out_file", help="Output file")
     args = parser.parse_args()
 
-    crop_size = (int(args.crop_size.split('x')[0]), int(args.crop_size.split('x')[1]))
+    crop_size = (int(args.crop_size.split("x")[0]), int(args.crop_size.split("x")[1]))
     crop(args.img_path, crop_size, args.fit, args.out_file)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

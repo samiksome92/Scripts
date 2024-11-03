@@ -9,8 +9,8 @@ mkvmerge. The last frame is duplicated to make sure last frame delay is not drop
 import argparse
 import math
 import os
-from shutil import rmtree
 import subprocess
+from shutil import rmtree
 from typing import List
 
 from PIL import Image
@@ -29,12 +29,7 @@ def extract_frames(gif_file: str, out_dir: str, bg_color: str) -> None:
         Background color specified as hex code.
     """
     # Extract frames.
-    command = [
-        'magick',
-        gif_file,
-        '-coalesce',
-        os.path.join(out_dir, '%06d.png')
-    ]
+    command = ["magick", gif_file, "-coalesce", os.path.join(out_dir, "%06d.png")]
 
     subprocess.run(command, check=True)
 
@@ -42,10 +37,11 @@ def extract_frames(gif_file: str, out_dir: str, bg_color: str) -> None:
     img_files = os.listdir(out_dir)
     for img_file in img_files:
         command = [
-            'magick',
+            "magick",
             os.path.join(out_dir, img_file),
-            '-background', bg_color,
-            '-flatten',
+            "-background",
+            bg_color,
+            "-flatten",
             os.path.join(out_dir, img_file),
         ]
 
@@ -65,11 +61,11 @@ def get_durations(gif_file: str) -> List[int]:
     durations : List[int]
         Duration of each frame in milliseconds.
     """
-    with Image.open(gif_file, 'r') as img:
+    with Image.open(gif_file, "r") as img:
         durations = []
         for frame in range(img.n_frames):
             img.seek(frame)
-            durations.append(100 if img.info['duration'] <= 10 else img.info['duration'])
+            durations.append(100 if img.info["duration"] <= 10 else img.info["duration"])
 
     return durations
 
@@ -109,15 +105,21 @@ def constant_fps_encode(frames_dir: str, durations: List[int], out_file: str) ->
 
     # Use ffmpeg to encode the image at constant fps. Pad last frame to make sure delay is not dropped.
     command = [
-        'ffmpeg',
-        '-r', f'1000/{duration}',
-        '-start_number', '0',
-        '-i', f'{frames_dir}/%06d.png',
-        '-vf', 'tpad=stop=1:stop_mode=clone',
-        '-c:v', 'libx265',
-        '-crf', '12',
-        '-an',
-        f'{out_file}'
+        "ffmpeg",
+        "-r",
+        f"1000/{duration}",
+        "-start_number",
+        "0",
+        "-i",
+        f"{frames_dir}/%06d.png",
+        "-vf",
+        "tpad=stop=1:stop_mode=clone",
+        "-c:v",
+        "libx265",
+        "-crf",
+        "12",
+        "-an",
+        f"{out_file}",
     ]
 
     subprocess.run(command, check=True)
@@ -143,35 +145,45 @@ def variable_fps_encode(frames_dir: str, durations: List[int], out_file: str) ->
 
     # Encode at constant fps using ffmpeg. Pad last frame to make sure delay is not dropped.
     command = [
-        'ffmpeg',
-        '-r', f'1000/{ffmpeg_duration}',
-        '-start_number', '0',
-        '-i', f'{frames_dir}/%06d.png',
-        '-vf', 'tpad=stop=1: stop_mode=clone',
-        '-c:v', 'libx265',
-        '-crf', '12',
-        '-an',
-        os.path.join(frames_dir, os.path.basename(out_file))
+        "ffmpeg",
+        "-r",
+        f"1000/{ffmpeg_duration}",
+        "-start_number",
+        "0",
+        "-i",
+        f"{frames_dir}/%06d.png",
+        "-vf",
+        "tpad=stop=1: stop_mode=clone",
+        "-c:v",
+        "libx265",
+        "-crf",
+        "12",
+        "-an",
+        os.path.join(frames_dir, os.path.basename(out_file)),
     ]
 
     subprocess.run(command, check=True)
 
     # Create proper variable timestamps file.
-    timestamps_txt = '# timestamp format v2\n'
+    timestamps_txt = "# timestamp format v2\n"
     total_time = 0
     for frame_delay in durations:
-        timestamps_txt += f'{total_time}\n'
+        timestamps_txt += f"{total_time}\n"
         total_time += frame_delay
-    timestamps_txt += f'{total_time}\n{total_time+ffmpeg_duration}\n'
+    timestamps_txt += f"{total_time}\n{total_time+ffmpeg_duration}\n"
 
-    with open(os.path.join(frames_dir, 'timestamps.txt'), 'w', encoding='utf8') as file_obj:
+    with open(os.path.join(frames_dir, "timestamps.txt"), "w", encoding="utf8") as file_obj:
         file_obj.write(timestamps_txt)
 
     # Use mkvmerge to set correct timestamps.
-    command = ['mkvmerge',
-               '-o', f'{out_file}',
-               '--timestamps', f"0:{os.path.join(frames_dir, 'timestamps.txt')}",
-               os.path.join(frames_dir, os.path.basename(out_file))]
+    command = [
+        "mkvmerge",
+        "-o",
+        f"{out_file}",
+        "--timestamps",
+        f"0:{os.path.join(frames_dir, 'timestamps.txt')}",
+        os.path.join(frames_dir, os.path.basename(out_file)),
+    ]
 
     subprocess.run(command, check=True)
 
@@ -180,13 +192,13 @@ def main() -> None:
     """Main function for the script which takes gif as input and converts it to mkv."""
     # Parse arguments.
     parser = argparse.ArgumentParser()
-    parser.add_argument('gif_file', help='gif file to convert')
-    parser.add_argument('--out_file', help='output file', default=None)
-    parser.add_argument('--bg_color', help='the background color as a hex code eg. #2f213d', default='#000000')
+    parser.add_argument("gif_file", help="gif file to convert")
+    parser.add_argument("--out_file", help="output file", default=None)
+    parser.add_argument("--bg_color", help="the background color as a hex code eg. #2f213d", default="#000000")
     args = parser.parse_args()
 
     # Create a temporary directory to store extracted images and timestamps file.
-    tmp_dir = args.gif_file[:-4] + '.tmp'
+    tmp_dir = args.gif_file[:-4] + ".tmp"
     os.mkdir(tmp_dir)
 
     # Extract frames and get durations.
@@ -195,7 +207,7 @@ def main() -> None:
 
     # If output file is not explicitly specified use best guess.
     if args.out_file is None:
-        args.out_file = args.gif_file[:-4] + '.mkv'
+        args.out_file = args.gif_file[:-4] + ".mkv"
 
     # Check whether fps is constant or not and use respective encode function.
     if is_constant_fps(durations):
@@ -207,5 +219,5 @@ def main() -> None:
     rmtree(tmp_dir)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

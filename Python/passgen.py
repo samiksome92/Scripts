@@ -25,29 +25,35 @@ def main() -> None:
     """Main function for the script."""
     # Parse arguments.
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l', '--length', help='Length of the generated password', type=int, default=15)
-    parser.add_argument('-a', '--lowercase', help='Use lowercase letters', action='store_true')
-    parser.add_argument('-na', '--no_lowercase', help="Don't use lowercase letters", action='store_true')
-    parser.add_argument('-A', '--uppercase', help='Use uppercase letters', action='store_true')
-    parser.add_argument('-nA', '--no_uppercase', help="Don't use uppercase letters", action='store_true')
-    parser.add_argument('-1', '--digits', help='Use digits', action='store_true')
-    parser.add_argument('-n1', '--no_digits', help="Don't use digits", action='store_true')
-    parser.add_argument('-@', '--symbols', help='Use symbols', action='store_true')
-    parser.add_argument('-n@', '--no_symbols', help="Don't use symbols", action='store_true')
-    parser.add_argument('--valid_symbols', help='Provide a string of characters to use as symbols', default=None)
-    parser.add_argument('-c', '--clipboard',
-                        help='Copy generated password to clipboard instead of displaying it', action='store_true')
+    parser.add_argument("-l", "--length", help="Length of the generated password", type=int, default=15)
+    parser.add_argument("-a", "--lowercase", help="Use lowercase letters", action="store_true")
+    parser.add_argument("-na", "--no_lowercase", help="Don't use lowercase letters", action="store_true")
+    parser.add_argument("-A", "--uppercase", help="Use uppercase letters", action="store_true")
+    parser.add_argument("-nA", "--no_uppercase", help="Don't use uppercase letters", action="store_true")
+    parser.add_argument("-1", "--digits", help="Use digits", action="store_true")
+    parser.add_argument("-n1", "--no_digits", help="Don't use digits", action="store_true")
+    parser.add_argument("-@", "--symbols", help="Use symbols", action="store_true")
+    parser.add_argument("-n@", "--no_symbols", help="Don't use symbols", action="store_true")
+    parser.add_argument("--valid_symbols", help="Provide a string of characters to use as symbols", default=None)
+    parser.add_argument(
+        "-c", "--clipboard", help="Copy generated password to clipboard instead of displaying it", action="store_true"
+    )
     args = parser.parse_args()
 
     # Validate arguments.
     if (
-        args.lowercase and args.no_lowercase
-        or args.uppercase and args.no_uppercase
-        or args.digits and args.no_digits
-        or args.symbols and args.no_symbols
-        or args.no_symbols and args.valid_symbols
+        args.lowercase
+        and args.no_lowercase
+        or args.uppercase
+        and args.no_uppercase
+        or args.digits
+        and args.no_digits
+        or args.symbols
+        and args.no_symbols
+        or args.no_symbols
+        and args.valid_symbols
     ):
-        print('ERROR: Conflicing arguments.')
+        print("ERROR: Conflicing arguments.")
         sys.exit(1)
 
     # Create list of valid characters.
@@ -63,13 +69,13 @@ def main() -> None:
 
     # Ensure charsets is not empty.
     if len(charsets) == 0:
-        print('ERROR: Cannot generate password using empty character set.')
+        print("ERROR: Cannot generate password using empty character set.")
         sys.exit(1)
 
     # Generate password.
     while True:
         # First choose a set and then choose a character from the set.
-        password = ''.join([secrets.choice(charsets[secrets.randbelow(len(charsets))]) for _ in range(args.length)])
+        password = "".join([secrets.choice(charsets[secrets.randbelow(len(charsets))]) for _ in range(args.length)])
 
         # Make sure password has at least one character from each set. Skip in case password length is shorter than
         # number of sets.
@@ -93,5 +99,5 @@ def main() -> None:
         print(password)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
