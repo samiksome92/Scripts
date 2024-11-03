@@ -188,7 +188,7 @@ Given a directory with images, it first checks all images for supported formats 
 - `rich`
 
 ### Usage
-    makecbz.py [-h] [-n] [-d] dirs [dirs ...]
+    makecbz.py [-h] [-n] [-d] [--overwrite] dirs [dirs ...]
 
 positional arguments:
 
@@ -199,10 +199,13 @@ optional arguments:
     -h, --help       show this help message and exit
     -n, --no_rename  Don't rename files
     -d, --delete     Delete original files
+    --overwrite      Overwrite output file if it exists
 
 Supply a directory or a list of directories (of images) to convert them into CBZ files. If there are non-image files, non-supported formats or corrupted images then a list of such files is printed out. Certain file names (hardcoded) are excluded from such a check.
 
 If `--no-rename` is specified the original file names of the images are kept, otherwise they are renamed as `01.jpg`, `02.jpg`, `03.jpg`, ... (the numbers are padded with as many zeros as required, with a minimum of 2 digits). `--delete` if specified deletes the original image files as well as the directory.
+
+By default, if the output file already exists the user is prompted before overwriting it. If `--overwrite` is specified the output file is automatically overwritten.
 
 ---
 

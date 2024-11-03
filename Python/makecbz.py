@@ -74,7 +74,7 @@ def check_files(files: list[Path]) -> tuple[list[tuple[Path, str]], list[Path], 
     return img_files, bad_files, excluded_files
 
 
-def make_cbz(dir: Path, no_rename: bool = False, delete: bool = False) -> None:
+def make_cbz(dir: Path, no_rename: bool = False, delete: bool = False, overwrite: bool = False) -> None:
     """Make a cbz from a directory.
 
     dir : Path
@@ -83,10 +83,12 @@ def make_cbz(dir: Path, no_rename: bool = False, delete: bool = False) -> None:
         Don't rename files if True. (default=False)
     delete : bool, optional
         Delete original files and directory if True. (default=False)
+    overwrite : bool, optional
+        Overwrite output file if True. (default=False)
     """
     # Check if output file is already present.
     out_file = dir.parent / (dir.name + ".cbz")
-    if out_file.exists():
+    if out_file.exists() and not overwrite:
         RICH_CONSOLE.print(
             f"[bright_yellow]WARNING:[/bright_yellow] Output file already exists. Overwrite? {rich.markup.escape('[y/N]')} ",
             end="",
@@ -144,6 +146,7 @@ def main() -> None:
     parser.add_argument("dirs", help="Directory(s) containing the images", nargs="+")
     parser.add_argument("-n", "--no_rename", help="Don't rename files", action="store_true")
     parser.add_argument("-d", "--delete", help="Delete original files", action="store_true")
+    parser.add_argument("--overwrite", help="Overwrite output file if it exists", action="store_true")
     args = parser.parse_args()
 
     # Convert directories to Paths.
@@ -156,7 +159,7 @@ def main() -> None:
             RICH_CONSOLE.print(f"[bright_red]ERROR:[/bright_red] {rich.markup.escape(str(dir))} does not exist.")
             continue
         print(f"Processing {dir} ...")
-        make_cbz(dir, args.no_rename, args.delete)
+        make_cbz(dir, args.no_rename, args.delete, args.overwrite)
 
 
 if __name__ == "__main__":
