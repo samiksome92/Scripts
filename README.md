@@ -18,7 +18,6 @@ This is simply a collection of scripts to make my life easier.
 - [`fortiauth.py`](#fortiauthpy)
 - [`gallery.py`](#gallerypy)
 - [`gif2mkv.py`](#gif2mkvpy)
-- [`makecbz.py`](#makecbzpy)
 - [`nocache.http.server.py`](#nocachehttpserverpy)
 - [`passgen.py`](#passgenpy)
 - [`txtconv.py`](#txtconvpy)
@@ -175,37 +174,6 @@ optional arguments:
 Directly converting from gif to H.265 encoded mkv using ffmpeg causes certain issues such as dropping the last frame delay. This script tries to rectify that.
 
 The script extracts frames from gif using imagemagick and composes them onto a solid background color. It then checks whether the gif has a constant or variable fps and proceeds accordingly. For constant fps the encoding is straight forward and uses only `ffmpeg`. However, for variable fps `ffmpeg`'s `concat` demuxer does not always produce proper timings (based on our experiments). As such, we first encode using `ffmpeg` at a constant fps followed by setting timecodes explicitly using `mkvmerge`. The last frame is also duplicated in both cases so that it is shown properly.
-
----
-
-## `makecbz.py`
-This script takes a directory as input and produces a CBZ file as output.
-
-Given a directory with images, it first checks all images for supported formats and possible corruption. The images are then renamed (optionally) and packed into a zip/cbz file. If specified the original image files and directory are deleted.
-
-### Requirements
-- `pillow`
-- `rich`
-
-### Usage
-    makecbz.py [-h] [-n] [-d] [--overwrite] dirs [dirs ...]
-
-positional arguments:
-
-    dirs             Directory(s) containing the images
-
-optional arguments:
-
-    -h, --help       show this help message and exit
-    -n, --no_rename  Don't rename files
-    -d, --delete     Delete original files
-    --overwrite      Overwrite output file if it exists
-
-Supply a directory or a list of directories (of images) to convert them into CBZ files. If there are non-image files, non-supported formats or corrupted images then a list of such files is printed out. Certain file names (hardcoded) are excluded from such a check.
-
-If `--no-rename` is specified the original file names of the images are kept, otherwise they are renamed as `01.jpg`, `02.jpg`, `03.jpg`, ... (the numbers are padded with as many zeros as required, with a minimum of 2 digits). `--delete` if specified deletes the original image files as well as the directory.
-
-By default, if the output file already exists the user is prompted before overwriting it. If `--overwrite` is specified the output file is automatically overwritten.
 
 ---
 
