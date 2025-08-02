@@ -2,6 +2,7 @@
 // @name            Nyaa Magnet Links
 // @match           https://*.nyaa.si/
 // @version         1.1
+// @author          samiksome92
 // @description     Gather all magnet links in one page and copy them to clipboard.
 // @icon            https://nyaa.si/static/favicon.png
 // @run-at          document-end
