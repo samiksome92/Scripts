@@ -1,49 +1,33 @@
 // ==UserScript==
-// @name         Nyaa Magnet Links
-// @description  Gather all magnet links in one page of nyaa.si.
-// @icon         https://nyaa.si/static/favicon.png
-// @author       samiksome92
-// @version      1.0
-// @match        *://nyaa.si/
-// @run-at       document-end
+// @name            Nyaa Magnet Links
+// @match           https://*.nyaa.si/
+// @version         1.1
+// @description     Gather all magnet links in one page and copy them to clipboard.
+// @icon            https://nyaa.si/static/favicon.png
+// @run-at          document-end
 // ==/UserScript==
 
 async function getLinks() {
-    /**
-     * Retrieves all magnet links in the page and copies them to the clipboard.
-     * 
-     * @returns Nothing.
-     */
-    let magnets = document.getElementsByClassName("fa-magnet");
-    magnets = Array.from(magnets).slice(1); // Slice out first element since it corresponds to the added button.
+    // Retrieves all magnet links and copies them to clipboard.
+    let links = Array
+        .from(document.querySelectorAll("a"))
+        .filter(a => a.href.startsWith("magnet:"))
+        .map(a => a.href)
+        .join("\n");
+    await navigator.clipboard.writeText(links);
 
-    let allLinks = "";
-    magnets.forEach(magnet => {
-        magnet = magnet.parentElement.getAttribute("href");
-        allLinks += magnet + "\n";
-    });
+    let note = document.createElement("div");
+    note.classList.add("alert", "alert-info");
+    note.textContent = "Magnet links copied to clipboard";
 
-    // Copy to clipboard.
-    await navigator.clipboard.writeText(allLinks);
-
-    // Show info alert.
-    let template = document.createElement("template");
-    const infoHTML = '<div class="alert alert-info">' +
-        "Magnet links copied to clipboard" +
-        "</div>"
-    template.innerHTML = infoHTML;
-
-    document.getElementsByClassName("container")[1].prepend(template.content.firstChild);
+    document.querySelectorAll(".container")[1].prepend(note);
 }
 
-// Create template for an extra button beside search for gathering the links.
-let template = document.createElement("template");
-const buttonHTML = '<div class="input-group-btn">' +
-    '<button id="getlinks-button" class="btn btn-primary" type="button">' +
-    '<i class="fa fa-magnet fa-fw"></i>' +
-    "</button></div>";
-template.innerHTML = buttonHTML;
-
-// Add the new button and attach listener for click.
-document.getElementsByClassName("input-group")[0].append(template.content.firstChild);
-document.getElementById("getlinks-button").addEventListener("click", getLinks);
+// Add an extra button beside search for copying the links.
+let div = document.createElement("div");
+div.classList.add("btn", "btn-primary");
+let i = document.createElement("i");
+i.classList.add("fa", "fa-magnet", "fa-fw");
+div.append(i);
+div.addEventListener("click", getLinks);
+document.querySelectorAll(".navbar-form")[1].append(div);

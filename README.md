@@ -52,7 +52,7 @@ A script implementing a simple http server with custom cache control headers. Us
 ---
 
 ## `nyaaMagnet.js`
-This script adds an extra button beside the search button in [nyaa.si](https://nyaa.si), which collects the magnet links for all of the torrents listed in the current page/screen and copies them to the clipboard.
+This script adds an extra button beside the search button in [nyaa.si](https://nyaa.si), which collects magnet links for all of the torrents listed in the current page/screen and copies them to the clipboard.
 
 Primary use is searching for torrents of a series and grabbing all magnet links (say for all episodes) in one go.
 
