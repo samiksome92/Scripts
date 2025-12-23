@@ -10,10 +10,9 @@
 
 async function getLinks() {
     // Retrieves all magnet links and copies them to clipboard.
-    let links = Array
-        .from(document.querySelectorAll("a"))
-        .filter(a => a.href.startsWith("magnet:"))
-        .map(a => a.href)
+    let links = Array.from(document.querySelectorAll("a"))
+        .filter((a) => a.href.startsWith("magnet:"))
+        .map((a) => a.href)
         .join("\n");
     await navigator.clipboard.writeText(links);
 
